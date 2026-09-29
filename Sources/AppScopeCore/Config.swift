@@ -11,9 +11,10 @@ public struct Configuration: Sendable {
     self.directory = directory
     self.values = values
     self.sourceURL = sourceURL
-    fingerprints = Dictionary(uniqueKeysWithValues: ["apple_ads", "app_store_connect"].map { provider in
-      (provider, Self.fingerprint(values: values, provider: provider))
-    })
+    fingerprints = Dictionary(
+      uniqueKeysWithValues: ["apple_ads", "app_store_connect"].map { provider in
+        (provider, Self.fingerprint(values: values, provider: provider))
+      })
   }
   public static func load(environment: [String: String] = ProcessInfo.processInfo.environment)
     throws -> Configuration
@@ -52,13 +53,16 @@ public struct Configuration: Sendable {
     guard credentialStatus(name) == "configured_unverified" else {
       throw ScopeError(
         "credentials_missing",
-        "Connect \(name) with start_connection, or run appscope configure \(name.replacingOccurrences(of: "_", with: "-")). Public searches still work.")
+        "Connect \(name) with start_connection, or run appscope configure \(name.replacingOccurrences(of: "_", with: "-")). Public searches still work."
+      )
     }
     return values[name]
   }
   public var environment: [String: String] {
-    ["APPSCOPE_DATA_DIR": directory.path,
-     "APPSCOPE_CONFIG": (sourceURL ?? directory.appendingPathComponent("config.json")).path]
+    [
+      "APPSCOPE_DATA_DIR": directory.path,
+      "APPSCOPE_CONFIG": (sourceURL ?? directory.appendingPathComponent("config.json")).path,
+    ]
   }
 
   /// Kept only in local evidence records; never returned to the agent.

@@ -65,7 +65,10 @@ extension AppScope {
         "Saved status is a checkpoint, not proof a process is still alive. Resume recovers interrupted steps.",
     ])
   }
-  func refreshApp(app: String, country: String, args: JSON, progress: RefreshProgress?, preparedRunID: String? = nil) async throws
+  func refreshApp(
+    app: String, country: String, args: JSON, progress: RefreshProgress?,
+    preparedRunID: String? = nil, preparedKeywords: [String]? = nil
+  ) async throws
     -> JSON
   {
     if args["run_id"] != .null && args["new_run"].boolValue == true {
@@ -98,9 +101,14 @@ extension AppScope {
       }
       run = latest
     } else {
-      let terms = try await database.list("tracked").filter {
-        $0["app_id"].text == app && $0["country"].text == country
-      }.map { $0["keyword"].text }.sorted()
+      let terms: [String]
+      if let preparedKeywords {
+        terms = preparedKeywords
+      } else {
+        terms = try await database.list("tracked").filter {
+          $0["app_id"].text == app && $0["country"].text == country
+        }.map { $0["keyword"].text }.sorted()
+      }
       var steps: [JSON] = [["kind": "profile", "status": "pending"]]
       let includePopularity = args["include_popularity"].boolValue ?? true
       let includePerformance = args["include_performance"].boolValue ?? true

@@ -9,7 +9,9 @@ public actor AppScope {
   var connect: AppStoreConnect
   let http: HTTP
   let connectionLauncher: ConnectionLauncher?
-  public init(config: Configuration, http: HTTP = HTTP(), connectionLauncher: ConnectionLauncher? = nil) throws {
+  public init(
+    config: Configuration, http: HTTP = HTTP(), connectionLauncher: ConnectionLauncher? = nil
+  ) throws {
     self.config = config
     self.http = http
     self.connectionLauncher = connectionLauncher
@@ -35,20 +37,31 @@ public actor AppScope {
     async throws -> JSON
   {
     try ToolCatalog.validate(name, args)
+    if let app = args["app_id"]?.text { _ = try Validate.appID(app) }
+    if let country = args["country"]?.text { _ = try Validate.country(country) }
     try reloadConfiguration()
     let before = config
     do {
       let result = try await execute(name, args, progress: progress)
-      try await observeConnectionResult(name: name, args: args, result: result, configuration: before)
+      try await observeConnectionResult(
+        name: name, args: args, result: result, configuration: before)
       guard Onboarding.relevantTools.contains(name) else { return result }
-      return try await result.setting(["onboarding": onboarding(name: name, args: args)])
+      var connectionArgs = args
+      if name == "refresh_app" {
+        for flag in ["include_popularity", "include_performance"] {
+          connectionArgs[flag] = result["run"][flag]
+        }
+      }
+      return try await result.setting(["onboarding": onboarding(name: name, args: connectionArgs)])
     } catch let error as ScopeError {
       if let provider = Onboarding.provider(for: name) {
-        try await saveConnectionEvidence(provider: provider, app: args["app_id"]?.text ?? "*",
+        try await saveConnectionEvidence(
+          provider: provider, app: args["app_id"]?.text ?? "*",
           country: args["country"]?.text.lowercased() ?? "us", error: error, configuration: before)
       }
       guard Onboarding.relevantTools.contains(name) else { throw error }
-      throw ScopeError(error.code, error.message, onboarding: try await onboarding(name: name, args: args))
+      throw ScopeError(
+        error.code, error.message, onboarding: try await onboarding(name: name, args: args))
     }
   }
 
@@ -56,19 +69,25 @@ public actor AppScope {
     guard config.sourceURL != nil else { return }
     let updated = try Configuration.load(environment: config.environment)
     // Recreate clients even when only the key file changed, invalidating cached Ads tokens.
-    guard updated.values != config.values || Onboarding.providers.contains(where: {
-      credentialFingerprints[$0] != updated.credentialFingerprint($0)
-    }) else { return }
+    guard
+      updated.values != config.values
+        || Onboarding.providers.contains(where: {
+          credentialFingerprints[$0] != updated.credentialFingerprint($0)
+        })
+    else { return }
     config = updated
     ads = AppleAds(config: updated, http: http)
     connect = AppStoreConnect(config: updated, http: http, database: database)
-    credentialFingerprints = Dictionary(uniqueKeysWithValues: Onboarding.providers.map {
-      ($0, updated.credentialFingerprint($0))
-    })
+    credentialFingerprints = Dictionary(
+      uniqueKeysWithValues: Onboarding.providers.map {
+        ($0, updated.credentialFingerprint($0))
+      })
   }
   var credentialFingerprints: [String: String] = [:]
 
-  func execute(_ name: String, _ args: [String: JSON], progress: RefreshProgress?) async throws -> JSON {
+  func execute(_ name: String, _ args: [String: JSON], progress: RefreshProgress?) async throws
+    -> JSON
+  {
     let a = JSON.object(args)
     switch name {
     case "start_connection": return try await startConnection(a)
@@ -88,7 +107,9 @@ public actor AppScope {
     let app = try a["app_id"].stringValue.map(Validate.appID)
     let country = try Validate.country(a["country"].stringValue ?? "us")
     switch name {
-    case "check_connections": return try await checkConnections(app: app!, country: country, provider: a["provider"].stringValue)
+    case "check_connections":
+      return try await checkConnections(
+        app: app!, country: country, provider: a["provider"].stringValue)
     case "record_experiment":
       return ["experiment": try await recordExperiment(app: app!, country: country, args: a)]
     case "update_experiment":

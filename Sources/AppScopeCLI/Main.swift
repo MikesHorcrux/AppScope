@@ -8,9 +8,18 @@ import MCP
   @MainActor static func main() async {
     do {
       if CommandLine.arguments.dropFirst().first == "connection-window" {
-        guard CommandLine.arguments.count == 3 else { throw ScopeError("usage", "Use appscope connection-window SESSION_ID") }
-        try ConnectionWindow.run(sessionID: CommandLine.arguments[2])
-      } else { try await run() }
+        guard CommandLine.arguments.count == 3 else {
+          throw ScopeError("usage", "Use appscope connection-window SESSION_ID")
+        }
+        if Bundle.main.bundleIdentifier == "com.lunarmothstudios.AppScope.Connection" {
+          try ConnectionWindow.run(sessionID: CommandLine.arguments[2])
+        } else {
+          try ConnectionWindowLauncher.launch(
+            Validate.identifier(CommandLine.arguments[2]), Configuration.load())
+        }
+      } else {
+        try await run()
+      }
     } catch let error as ScopeError {
       fputs("AppScope [\(error.code)]: \(error.message)\n", stderr)
       exit(1)
@@ -68,7 +77,8 @@ import MCP
       return
     }
     let configuration = try Configuration.load()
-    let scope = try AppScope(config: configuration, connectionLauncher: ConnectionWindowLauncher.launch)
+    let scope = try AppScope(
+      config: configuration, connectionLauncher: ConnectionWindowLauncher.launch)
     switch args[0] {
     case "doctor":
       if args.count == 1 {
@@ -136,6 +146,18 @@ import MCP
         }
       }
       try await server.start(transport: StdioTransport())
+      let connections = Task {
+        while !Task.isCancelled {
+          do {
+            try await scope.advanceReadyConnections()
+            try await Task.sleep(for: .seconds(1))
+          } catch is CancellationError { return } catch {
+            // A transient storage/configuration error must not spin or corrupt stdio.
+            do { try await Task.sleep(for: .seconds(5)) } catch { return }
+          }
+        }
+      }
+      defer { connections.cancel() }
       await server.waitUntilCompleted()
     default: throw ScopeError("usage", "Unknown command. Run appscope --help.")
     }
@@ -170,7 +192,9 @@ import MCP
     print(
       "Saved private local configuration. Key format and permissions checked; Apple access is still unverified."
     )
-    print("AppScope reloads credentials on the next tool call. To test access: appscope doctor --live YOUR_NUMERIC_APP_ID")
+    print(
+      "AppScope reloads credentials on the next tool call. To test access: appscope doctor --live YOUR_NUMERIC_APP_ID"
+    )
   }
   static func setup() throws {
     let environment = ProcessInfo.processInfo.environment

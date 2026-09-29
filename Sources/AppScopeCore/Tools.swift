@@ -20,8 +20,12 @@ public enum ToolCatalog {
   static let app = string("Numeric App Store app ID", max: 20)
   static let country = string("Two-letter ISO storefront country; defaults to us", max: 2)
   static let keyword = string("Search phrase", max: 100)
-  static let interaction: JSON = string("Use interactive only in a live user conversation; background is the default.").setting(["enum": ["interactive", "background"], "default": "background"])
-  static let provider: JSON = string("Apple account to connect").setting(["enum": .strings(Onboarding.providers)])
+  static let interaction: JSON = string(
+    "Use interactive only in a live user conversation; background is the default."
+  ).setting(["enum": ["interactive", "background"], "default": "background"])
+  static let provider: JSON = string("Apple account to connect").setting([
+    "enum": .strings(Onboarding.providers)
+  ])
   static let sessionID = string("Setup session UUID returned by start_connection", max: 36)
   static let common: [String: JSON] = ["app_id": app, "country": country]
   static func tool(
@@ -31,8 +35,11 @@ public enum ToolCatalog {
     Tool(
       name: name, description: description,
       inputSchema: [
-        "type": "object", "properties": .object(Onboarding.relevantTools.contains(name)
-          ? properties.merging(["interaction": interaction]) { old, _ in old } : properties), "required": .strings(required),
+        "type": "object",
+        "properties": .object(
+          Onboarding.relevantTools.contains(name)
+            ? properties.merging(["interaction": interaction]) { old, _ in old } : properties),
+        "required": .strings(required),
         "additionalProperties": false,
       ],
       annotations: .init(
@@ -45,26 +52,59 @@ public enum ToolCatalog {
   }
   static let experimentID = string("Experiment UUID returned by AppScope", max: 36)
   public static let all: [Tool] = [
-    tool("start_connection",
+    tool(
+      "start_connection",
       "With the user's consent, prepare a private native setup window for one Apple account and remember the request to continue. Never supply credentials. Background calls never open UI; existing configured accounts are verified without a window. Poll connection_status after the user saves. Reuse the returned session on retries.",
-      fields(["provider": provider, "interaction": interaction,
-        "resume_tool": string("Original request to continue; defaults to daily_report").setting(["enum": .strings(Onboarding.continuationTools)]),
-        "resume_arguments": ["type": "object", "description": "Original tool arguments, validated against resume_tool. No credentials or arbitrary commands.", "additionalProperties": true],
-        "retry": ["type": "boolean", "description": "Explicit user retry overrides a saved decline or deferral.", "default": false],
-        "reopen_window": ["type": "boolean", "description": "Reopen an existing waiting session only when the user asks.", "default": false]]),
-      required: ["provider", "app_id", "interaction"], localWrite: true),
-    tool("connection_status",
-      "Read setup progress. Once credentials are saved, reload them, verify only the selected provider and continue the original read-only Apple request. Refreshes advance in bounded batches; poll while state is refreshing. Stop polling on awaiting_user, needs_attention, cancelled, expired or completed. No secrets are returned.",
-      ["session_id": sessionID,
-       "max_steps": integer("Refresh steps per call", min: 1, max: 20, default: 5),
-       "retry": ["type": "boolean", "description": "Retry a failed verification or continuation after addressing its cause.", "default": false]],
+      fields([
+        "provider": provider, "interaction": interaction,
+        "resume_tool": string(
+          "Original request; defaults to daily_report for an app, owned_apps without app_id"
+        ).setting(["enum": .strings(Onboarding.continuationTools)]),
+        "resume_arguments": [
+          "type": "object",
+          "description":
+            "Original tool arguments, validated against resume_tool. No credentials or arbitrary commands.",
+          "additionalProperties": true,
+        ],
+        "retry": [
+          "type": "boolean",
+          "description": "Explicit user retry overrides a saved decline or deferral.",
+          "default": false,
+        ],
+        "reopen_window": [
+          "type": "boolean",
+          "description": "Reopen an existing waiting session only when the user asks.",
+          "default": false,
+        ],
+      ]),
+      required: ["provider", "interaction"], localWrite: true),
+    tool(
+      "connection_status",
+      "Read setup progress and collect the completed request. The running server verifies and continues automatically after saving. This tool also recovers an interrupted continuation. Use wait_seconds 20 while the user completes private setup. Stop polling on needs_attention, cancelled, expired or completed. No secrets are returned.",
+      [
+        "session_id": sessionID,
+        "max_steps": integer("Refresh steps per call", min: 1, max: 20, default: 5),
+        "wait_seconds": integer(
+          "Wait briefly for private setup to finish without blocking the helper", min: 0, max: 20,
+          default: 0),
+        "retry": [
+          "type": "boolean",
+          "description": "Retry a failed verification or continuation after addressing its cause.",
+          "default": false,
+        ],
+      ],
       required: ["session_id"], localWrite: true),
-    tool("connection_decision",
+    tool(
+      "connection_decision",
       "Record the user's choice for this provider and app across chats and restarts. later suppresses invitations for seven days; decline suppresses until an explicit start_connection retry. Does not disconnect an existing account.",
-      ["provider": provider, "app_id": app,
-       "decision": string("The user's choice").setting(["enum": ["later", "decline"]])],
-      required: ["provider", "app_id", "decision"], localWrite: true, external: false),
-    tool("cancel_connection", "Cancel a setup session. Retains any credentials already saved and any collected evidence; stops continuation.",
+      [
+        "provider": provider, "app_id": app,
+        "decision": string("The user's choice").setting(["enum": ["later", "decline"]]),
+      ],
+      required: ["provider", "decision"], localWrite: true, external: false),
+    tool(
+      "cancel_connection",
+      "Cancel a setup session. Retains any credentials already saved and any collected evidence; stops continuation.",
       ["session_id": sessionID], required: ["session_id"], localWrite: true, external: false),
     tool(
       "check_connections",
@@ -112,7 +152,10 @@ public enum ToolCatalog {
       "Check capabilities and whether Apple credentials are configured. Does not reveal credentials or make network calls.",
       common, external: false),
     tool("list_apps", "List locally saved app briefs and tracked keywords.", [:], external: false),
-    tool("owned_apps", "List your apps through App Store Connect; requires credentials.", [:]),
+    tool(
+      "owned_apps",
+      "List your apps through App Store Connect; requires credentials. Saves sanitized connection evidence locally.",
+      [:], localWrite: true),
     tool(
       "search_apps",
       "Search the public App Store catalog. No credentials required. Result order is an observation, not verified device rank.",
@@ -180,7 +223,7 @@ public enum ToolCatalog {
         "start": string("Sunday YYYY-MM-DD", max: 10),
         "end": string("Saturday YYYY-MM-DD", max: 10), "keywords": strings("Optional exact terms"),
         "offset": integer("Apple pagination offset", min: 0, max: 10000, default: 0),
-      ], required: ["genre", "start", "end"]),
+      ], required: ["genre", "start", "end"], localWrite: true),
     tool(
       "app_performance",
       "Sync standard Apple analytics reports and compare two periods. Defaults to 7 days ending 3 days ago. Missing/partial coverage is explicit. No conversion rate is fabricated from non-additive unique counts. Stores data locally.",

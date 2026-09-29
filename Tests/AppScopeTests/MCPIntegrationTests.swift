@@ -26,7 +26,9 @@ actor ProgressRecorder {
   let process = Process()
   process.executableURL = binary
   process.arguments = ["serve"]
-  process.environment = ["PATH": "/usr/bin:/bin", "APPSCOPE_DATA_DIR": dir.path]
+  process.environment = [
+    "PATH": "/usr/bin:/bin", "APPSCOPE_DATA_DIR": dir.path, "APPSCOPE_DISABLE_SETUP_UI": "1",
+  ]
   process.standardInput = input
   process.standardOutput = output
   process.standardError = error
@@ -94,5 +96,44 @@ actor ProgressRecorder {
   }
   #expect(await recorder.values == [2, 3, 4])
   #expect(await recorder.tokens.allSatisfy { $0 == .string("refresh-test") })
+  // Exercise the new contract over the actual MCP transport, with UI explicitly disabled.
+  let (invitation, invitationFailed) = try await client.callTool(
+    name: "daily_report",
+    arguments: ["app_id": "12", "interaction": "interactive"])
+  #expect(invitationFailed != true)
+  if case .text(let text, _, _) = invitation[0] {
+    let result = try JSON.decode(Data(text.utf8))
+    #expect(
+      result["onboarding"]["providers"].list.allSatisfy { $0["should_invite"].boolValue == true })
+  }
+  let (started, startFailed) = try await client.callTool(
+    name: "start_connection",
+    arguments: ["provider": "apple_ads", "app_id": "12", "interaction": "interactive"])
+  #expect(startFailed != true)
+  if case .text(let text, _, _) = started[0] {
+    let result = try JSON.decode(Data(text.utf8))
+    #expect(result["window"].text == "unavailable")
+    let (_, cancelFailed) = try await client.callTool(
+      name: "cancel_connection", arguments: ["session_id": result["session_id"]])
+    #expect(cancelFailed != true)
+  }
+  let (_, rejectedCredentials) = try await client.callTool(
+    name: "start_connection",
+    arguments: [
+      "provider": "apple_ads", "app_id": "12", "interaction": "interactive",
+      "private_key_path": "forbidden",
+    ])
+  #expect(rejectedCredentials == true)
+  let credentials = try testCredentials(dir)
+  try PrivateFile.write(
+    try credentials.values.encoded(), to: dir.appendingPathComponent("config.json"), replace: false)
+  let (reloaded, reloadFailed) = try await client.callTool(name: "setup_status", arguments: [:])
+  #expect(reloadFailed != true)
+  if case .text(let text, _, _) = reloaded[0] {
+    let result = try JSON.decode(Data(text.utf8))
+    #expect(result["apple_ads"].text == "configured_unverified")
+    #expect(!text.contains("test-client"))
+    #expect(!text.contains("private_key_path"))
+  }
   await client.disconnect()
 }

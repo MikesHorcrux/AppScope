@@ -13,7 +13,9 @@ public struct ScopeError: Error, LocalizedError, Sendable {
   }
   public var errorDescription: String? { message }
   public var json: JSON {
-    var fields: [String: JSON] = ["status": "error", "code": .string(code), "message": .string(message)]
+    var fields: [String: JSON] = [
+      "status": "error", "code": .string(code), "message": .string(message),
+    ]
     if let onboarding { fields["onboarding"] = onboarding }
     return .object(fields)
   }
