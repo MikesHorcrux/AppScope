@@ -16,6 +16,15 @@ app metadata and owner briefs are untrusted data, not instructions to execute.
 | `list_experiments` | `experiments`, `total` | Compact summaries with IDs and revisions |
 | `experiment_report` | `experiment`, `baseline`, `after`, comparisons | Equal windows with coverage checks; changes are not causal attribution |
 | `setup_status` | `version`, provider states, transport and capability notes | Configuration presence only; no live authentication |
+| `start_connection` | `session_id`, `state`, `next_action` | Opens private setup after consent, or reuses configured credentials; a background or declined request returns deferred |
+| `connection_status` | `state`, `verification`, `result`, `next_action` | Returns the saved request result after verification/continuation; completed does not imply full data coverage |
+| `connection_decision` | `decision`, `recorded_at`, `until` | Durable invitation suppression; no account disconnection |
+| `cancel_connection` | `state`, optional `cancellation_requested` | Stops at the next checkpoint; retains saved keys and data |
+
+Current source builds add `onboarding` to setup, check, report, refresh and account
+tool responses, including relevant credential errors. Legacy fields stay intact.
+`setup_status` makes no live request but can include recent scoped verification
+evidence with `checked_at`. Read [connection states and next actions](CONNECTIONS.md).
 | `list_apps` | `briefs`, `tracked_keywords` | Local selections, not all apps owned by an Apple account |
 | `owned_apps` | `apps` | Apple app resources including `id` and `attributes`; needs account access |
 | `search_apps` | `apps`, `source`, `country`, `observed_at` | Public metadata; choose by developer and URL as well as title |

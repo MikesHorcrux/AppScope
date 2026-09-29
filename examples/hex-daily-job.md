@@ -6,11 +6,13 @@ COUNTRY with verified values. Save a brief and choose initial keywords first.
 Run one job at a time.
 
 > Produce a daily AppScope report for APP_ID in COUNTRY.
-> 1. Call refresh_app. If the host has a short timeout, use max_steps 3 and resume
+> 1. Call refresh_app with interaction set to background. If the host has a short timeout, use max_steps 3 and resume
 >    the returned run_id while status is paused. Otherwise the default collects
 >    everything in one call. For a partial run, retry its failed steps at most once
 >    in this job, then retain unresolved errors. Do not loop until a provider recovers.
 >    If a run expired across UTC dates, start a new run; do not join two days silently.
+>    Continue with partial data when an account is missing. Never open a setup window
+>    or repeatedly invite the user from a scheduled job. Honor saved declines.
 > 2. Inspect the returned report.health and every source's date/coverage. Completed
 >    collection does not imply complete provider data. Preserve skipped providers,
 >    failed steps and dated cached evidence. Use separately dated popularity_evidence

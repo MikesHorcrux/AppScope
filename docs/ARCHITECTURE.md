@@ -34,6 +34,9 @@ not the source tree.
 | `Sources/AppScopeCore/Insights.swift` | Source health, daily aggregation, trends and change candidates |
 | `Sources/AppScopeCore/Experiments.swift` | Immutable experiment definitions/baselines and revision-checked notes/status |
 | `Sources/AppScopeCore/Setup.swift` | Private key generation, atomic credential configuration and live checks |
+| `Sources/AppScopeCore/Onboarding.swift` | Scoped connection evidence, invitation suppression and next actions |
+| `Sources/AppScopeCore/ConnectionSessions.swift` | Durable setup decisions, verification and request continuation |
+| `Sources/AppScopeCLI/ConnectionWindow.swift` | Private native form, local app wrapper and detached helper process |
 | `Sources/AppScopeCore/Ranking.swift` | Public catalog adapter, observed positions and competition model |
 | `Sources/AppScopeCore/AppleAds.swift` | OAuth token exchange, suggestions and periodic popularity |
 | `Sources/AppScopeCore/Analytics.swift` | App Store Connect resources, report downloads, parsing and summaries |
@@ -92,6 +95,11 @@ There is no automatic pruning or user-facing history-deletion tool in v0.2.
 Untracking preserves history. Schema/data changes in future releases need a
 documented migration/backup strategy; do not assume a binary downgrade can read a
 newer database. See [backup instructions](SETUP.md#backup-and-restore).
+
+Connection sessions and user decisions also use additive record kinds. The
+running server completes requests already authorized through setup; it does not
+schedule new reports. Config changes rebuild provider clients before the next
+request. See [connection architecture and recovery](CONNECTIONS.md).
 
 ## Network and trust boundaries
 

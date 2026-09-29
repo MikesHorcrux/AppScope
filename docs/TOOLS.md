@@ -26,16 +26,118 @@ Dates must be real YYYY-MM-DD dates. See the response guide for semantic limits.
 MCP annotations describe local side effects. No tool changes live Apple listings
 or campaigns. Read-only tools can still return private account data to your host.
 
+## `start_connection`
+
+With the user's consent, prepare a private native setup window for one Apple account and remember the request to continue. Never supply credentials. Background calls never open UI; existing configured accounts are verified without a window. Poll connection_status after the user saves. Reuse the returned session on retries.
+
+Local writes: **yes**. Network access: **possible**.
+
+| Argument | Type | Required | Default | Constraints and meaning |
+|---|---|---|---|---|
+| `app_id` | string | no | — | 1–20 characters; Numeric App Store app ID |
+| `country` | string | no | `us` | Exactly two ISO letters; Two-letter ISO storefront country; defaults to us |
+| `interaction` | string | yes | `"background"` | 1–200 characters; Use interactive only in a live user conversation; background is the default.; Choices: interactive, background |
+| `provider` | string | yes | — | 1–200 characters; Apple account to connect; Choices: apple_ads, app_store_connect |
+| `reopen_window` | boolean | no | `false` | Reopen an existing waiting session only when the user asks. |
+| `resume_arguments` | object | no | — | Original tool arguments, validated against resume_tool. No credentials or arbitrary commands. |
+| `resume_tool` | string | no | — | 1–200 characters; Original request; defaults to daily_report for an app, owned_apps without app_id; Choices: daily_report, aso_strategy, refresh_app, app_performance, keyword_suggestions, search_term_popularity, owned_apps |
+| `retry` | boolean | no | `false` | Explicit user retry overrides a saved decline or deferral. |
+
+```json
+{
+  "arguments" : {
+    "app_id" : "1234567890",
+    "country" : "us",
+    "interaction" : "interactive",
+    "provider" : "app_store_connect",
+    "resume_arguments" : {
+      "app_id" : "1234567890",
+      "country" : "us"
+    },
+    "resume_tool" : "daily_report"
+  },
+  "name" : "start_connection"
+}
+```
+
+## `connection_status`
+
+Read setup progress and collect the completed request. The running server verifies and continues automatically after saving. This tool also recovers an interrupted continuation. Use wait_seconds 20 while the user completes private setup. Stop polling on needs_attention, cancelled, expired or completed. No secrets are returned.
+
+Local writes: **yes**. Network access: **possible**.
+
+| Argument | Type | Required | Default | Constraints and meaning |
+|---|---|---|---|---|
+| `max_steps` | integer | no | `5` | 1–20; Refresh steps per call |
+| `retry` | boolean | no | `false` | Retry a failed verification or continuation after addressing its cause. |
+| `session_id` | string | yes | — | 1–36 characters; Setup session UUID returned by start_connection |
+| `wait_seconds` | integer | no | `0` | 0–20; Wait briefly for private setup to finish without blocking the helper |
+
+```json
+{
+  "arguments" : {
+    "max_steps" : 5,
+    "session_id" : "22222222-2222-4222-8222-222222222222",
+    "wait_seconds" : 20
+  },
+  "name" : "connection_status"
+}
+```
+
+## `connection_decision`
+
+Record the user's choice for this provider and app across chats and restarts. later suppresses invitations for seven days; decline suppresses until an explicit start_connection retry. Does not disconnect an existing account.
+
+Local writes: **yes**. Network access: **none**.
+
+| Argument | Type | Required | Default | Constraints and meaning |
+|---|---|---|---|---|
+| `app_id` | string | no | — | 1–20 characters; Numeric App Store app ID |
+| `decision` | string | yes | — | 1–200 characters; The user's choice; Choices: later, decline |
+| `provider` | string | yes | — | 1–200 characters; Apple account to connect; Choices: apple_ads, app_store_connect |
+
+```json
+{
+  "arguments" : {
+    "app_id" : "1234567890",
+    "decision" : "later",
+    "provider" : "apple_ads"
+  },
+  "name" : "connection_decision"
+}
+```
+
+## `cancel_connection`
+
+Cancel a setup session. Retains any credentials already saved and any collected evidence; stops continuation.
+
+Local writes: **yes**. Network access: **none**.
+
+| Argument | Type | Required | Default | Constraints and meaning |
+|---|---|---|---|---|
+| `session_id` | string | yes | — | 1–36 characters; Setup session UUID returned by start_connection |
+
+```json
+{
+  "arguments" : {
+    "session_id" : "22222222-2222-4222-8222-222222222222"
+  },
+  "name" : "cancel_connection"
+}
+```
+
 ## `check_connections`
 
-Make bounded read-only live provider checks for this app. Unconfigured providers are skipped. Tests public lookup, Apple Ads suggestions and App Store Connect app/report-request access. Does not enable or import reports, expose credentials or persist results.
+Make bounded read-only live provider checks for this app. Unconfigured providers are skipped. Optionally check one provider. Saves sanitized capability evidence locally; never enables or imports reports or exposes credentials.
 
-Local writes: **no**. Network access: **possible**.
+Local writes: **yes**. Network access: **possible**.
 
 | Argument | Type | Required | Default | Constraints and meaning |
 |---|---|---|---|---|
 | `app_id` | string | yes | — | 1–20 characters; Numeric App Store app ID |
 | `country` | string | no | `us` | Exactly two ISO letters; Two-letter ISO storefront country; defaults to us |
+| `interaction` | string | no | `"background"` | 1–200 characters; Use interactive only in a live user conversation; background is the default.; Choices: interactive, background |
+| `provider` | string | no | — | 1–200 characters; Apple account to connect; Choices: apple_ads, app_store_connect |
 
 ```json
 {
@@ -166,7 +268,11 @@ Check capabilities and whether Apple credentials are configured. Does not reveal
 
 Local writes: **no**. Network access: **none**.
 
-No arguments.
+| Argument | Type | Required | Default | Constraints and meaning |
+|---|---|---|---|---|
+| `app_id` | string | no | — | 1–20 characters; Numeric App Store app ID |
+| `country` | string | no | `us` | Exactly two ISO letters; Two-letter ISO storefront country; defaults to us |
+| `interaction` | string | no | `"background"` | 1–200 characters; Use interactive only in a live user conversation; background is the default.; Choices: interactive, background |
 
 ```json
 {
@@ -196,11 +302,13 @@ No arguments.
 
 ## `owned_apps`
 
-List your apps through App Store Connect; requires credentials.
+List your apps through App Store Connect; requires credentials. Saves sanitized connection evidence locally.
 
-Local writes: **no**. Network access: **possible**.
+Local writes: **yes**. Network access: **possible**.
 
-No arguments.
+| Argument | Type | Required | Default | Constraints and meaning |
+|---|---|---|---|---|
+| `interaction` | string | no | `"background"` | 1–200 characters; Use interactive only in a live user conversation; background is the default.; Choices: interactive, background |
 
 ```json
 {
@@ -422,6 +530,7 @@ Local writes: **yes**. Network access: **possible**.
 |---|---|---|---|---|
 | `app_id` | string | yes | — | 1–20 characters; Numeric App Store app ID |
 | `country` | string | no | `us` | Exactly two ISO letters; Two-letter ISO storefront country; defaults to us |
+| `interaction` | string | no | `"background"` | 1–200 characters; Use interactive only in a live user conversation; background is the default.; Choices: interactive, background |
 | `offset` | integer | no | `0` | 0–10000; Apple pagination offset |
 | `seeds` | string array | no | — | 0–20 items; Each item: 1–100 characters; Optional seed phrases |
 
@@ -443,13 +552,14 @@ Local writes: **yes**. Network access: **possible**.
 
 Query top eligible Apple search terms by genre for complete Sunday–Saturday weeks. rankInGenre means term demand, not your app's rank. Requires Apple Ads credentials.
 
-Local writes: **no**. Network access: **possible**.
+Local writes: **yes**. Network access: **possible**.
 
 | Argument | Type | Required | Default | Constraints and meaning |
 |---|---|---|---|---|
 | `country` | string | no | `us` | Exactly two ISO letters; Two-letter ISO storefront country; defaults to us |
 | `end` | string | yes | — | 1–10 characters; Saturday YYYY-MM-DD |
 | `genre` | string | yes | — | 1–100 characters; Apple genre enum, e.g. PRODUCTIVITY_UTILITIES |
+| `interaction` | string | no | `"background"` | 1–200 characters; Use interactive only in a live user conversation; background is the default.; Choices: interactive, background |
 | `keywords` | string array | no | — | 0–20 items; Each item: 1–100 characters; Optional exact terms |
 | `offset` | integer | no | `0` | 0–10000; Apple pagination offset |
 | `start` | string | yes | — | 1–10 characters; Sunday YYYY-MM-DD |
@@ -481,6 +591,7 @@ Local writes: **yes**. Network access: **possible**.
 | `app_id` | string | yes | — | 1–20 characters; Numeric App Store app ID |
 | `country` | string | no | `us` | Exactly two ISO letters; Two-letter ISO storefront country; defaults to us |
 | `end` | string | no | — | 1–10 characters; Period end YYYY-MM-DD |
+| `interaction` | string | no | `"background"` | 1–200 characters; Use interactive only in a live user conversation; background is the default.; Choices: interactive, background |
 | `start` | string | no | — | 1–10 characters; Period start YYYY-MM-DD |
 | `sync` | boolean | no | `true` |  |
 | `sync_days` | integer | no | `35` | 7–90; Look back this many processing days when syncing |
@@ -506,6 +617,7 @@ Local writes: **no**. Network access: **none**.
 |---|---|---|---|---|
 | `app_id` | string | yes | — | 1–20 characters; Numeric App Store app ID |
 | `country` | string | no | `us` | Exactly two ISO letters; Two-letter ISO storefront country; defaults to us |
+| `interaction` | string | no | `"background"` | 1–200 characters; Use interactive only in a live user conversation; background is the default.; Choices: interactive, background |
 
 ```json
 {
@@ -527,6 +639,7 @@ Local writes: **no**. Network access: **none**.
 |---|---|---|---|---|
 | `app_id` | string | yes | — | 1–20 characters; Numeric App Store app ID |
 | `country` | string | no | `us` | Exactly two ISO letters; Two-letter ISO storefront country; defaults to us |
+| `interaction` | string | no | `"background"` | 1–200 characters; Use interactive only in a live user conversation; background is the default.; Choices: interactive, background |
 
 ```json
 {
@@ -550,6 +663,7 @@ Local writes: **yes**. Network access: **possible**.
 | `country` | string | no | `us` | Exactly two ISO letters; Two-letter ISO storefront country; defaults to us |
 | `include_performance` | boolean | no | `true` |  |
 | `include_popularity` | boolean | no | `true` |  |
+| `interaction` | string | no | `"background"` | 1–200 characters; Use interactive only in a live user conversation; background is the default.; Choices: interactive, background |
 | `max_steps` | integer | no | `120` | 1–120; Maximum steps this call; use smaller values for short host timeouts and resume |
 | `new_run` | boolean | no | `false` |  |
 | `run_id` | string | no | — | 1–36 characters; UUID from a previous refresh |

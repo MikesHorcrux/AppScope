@@ -28,11 +28,20 @@ using an Admin key; it is absent from MCP. Protect the Mac and MCP host: a proce
 running as your macOS user can already read that user's files. AppScope is not a
 sandbox against a compromised host.
 
-Guided configuration and key generation are CLI-only. The former requires a real
-Terminal, validates keys offline, preserves other provider settings and atomically
-replaces private config. Key generation never prints private bytes or overwrites
-existing key files. Live connection checks expose outcomes, not tokens/provider
-bodies, and do not enable or download analytics reports.
+Credential entry happens in a private native helper or the Terminal fallback.
+MCP only starts a session, reads progress, or records the user's decision. The
+helper inherits the exact config/data paths, detaches from MCP stdio, validates
+P-256 keys and atomically imports private copies. It rejects symlinks and stale
+edits to the same provider, and preserves the other provider. Only public Ads
+keys can be copied from its UI. Terminal key generation never prints private bytes
+or overwrites existing keys. Live checks save sanitized capability outcomes,
+not tokens or raw provider bodies. Report enablement requires the separate CLI.
+
+The running server can finish a user-authorized setup request after the helper
+closes. It uses a saved allowlisted request, bounded refresh steps and per-session
+locks. Background jobs never start setup windows. Cancellation takes effect at
+the next checkpoint; already imported credentials and collected data are retained.
+Credential reload clears Ads tokens; verification fingerprints remain local.
 
 Configuration/history are protected by filesystem permissions, not application-
 level encryption. Protect backups as private data. The MCP host and its agent can

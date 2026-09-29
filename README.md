@@ -72,7 +72,7 @@ path as the **command** and `serve` as its **argument**. If your host uses a JSO
 configuration file, merge the printed `appscope` entry into its existing servers.
 Reload the connection, then ask: **“Call AppScope’s setup_status.”**
 
-Installation puts the tool on your Mac; this connection step makes its 24 tools
+Installation puts the tool on your Mac; this connection step makes its 28 tools in this source branch
 available to your agent. AppScope does not register itself in your host.
 [Detailed connection instructions](docs/SETUP.md#connect-an-mcp-host)
 
@@ -109,16 +109,20 @@ want a fuller picture:
 | What keywords does Apple suggest, and how popular are they? | Your Apple Ads API credentials; scores are not guaranteed for every term |
 | How are downloads, engagement and sales doing? | Your App Store Connect API credentials and available, enabled analytics reports |
 
-Run guided credential setup **in your Terminal**, keeping private keys out of chat:
+In this source branch, ask your agent to connect the account your report needs.
+AppScope opens a private setup window, checks access, and continues the request.
+Keys stay on your Mac. See [the connection flow](docs/CONNECTIONS.md).
+
+Terminal setup remains available, including for the published alpha:
 
 ```sh
 "$HOME/.local/bin/appscope" configure apple-ads
 "$HOME/.local/bin/appscope" configure app-store-connect
 ```
 
-Configure whichever provider you need. These use Apple API credentials, not
-Sign in with Apple. Follow the [credential guide](docs/CREDENTIALS.md), then restart
-your MCP connection and ask your agent to check access.
+Configure whichever provider you need using Apple API credentials. Follow the
+[credential guide](docs/CREDENTIALS.md). Current source builds reload credentials
+automatically; older alpha processes need their MCP connection restarted.
 
 ## Tomorrow, bring the receipts
 

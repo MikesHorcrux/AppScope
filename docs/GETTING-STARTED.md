@@ -46,7 +46,7 @@ Ask the agent:
 
 > Call AppScope's setup_status and list its available tools.
 
-Expect 24 tools in v0.0.2-alpha. If the host cannot launch local stdio programs, it cannot
+Current source builds expose 28 tools; the published v0.0.2-alpha archive has 24. If the host cannot launch local stdio programs, it cannot
 connect directly to this server. See [connection troubleshooting](TROUBLESHOOTING.md).
 Starting `appscope serve` yourself in Terminal looks quiet because it waits for
 MCP messages on standard input. That is not an installation test; use `doctor`.
@@ -140,7 +140,9 @@ trends and recorded experiments. See the [response guide](RESPONSES.md).
 
 ## 7. Add demand and performance when ready
 
-Follow [Apple credential setup](CREDENTIALS.md). Once configured, query
+Ask your agent to connect the relevant Apple account. It opens a private setup
+window, checks access, and continues your request. See [the connection flow](CONNECTIONS.md).
+For Terminal setup, use [Apple credential setup](CREDENTIALS.md). Once configured, query
 `keyword_suggestions` before collecting a new ranking snapshot when you want its
 cached popularity attached. Call `app_performance` to sync available reports.
 If a ranking is already cached, a new popularity query does not rewrite that old

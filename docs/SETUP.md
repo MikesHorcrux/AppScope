@@ -89,7 +89,8 @@ Some hosts use a settings form or another file format: the executable and `serve
 argument are the same. Consult that host's current MCP instructions for where to
 put them. Never add credentials or private-key contents to the connection JSON.
 
-Restart the connection, confirm that it exposes 24 tools, and call `setup_status`.
+Restart the connection and call `setup_status`. Current source builds expose 28
+tools; the published v0.0.2-alpha archive has 24.
 `configured_unverified` means required credential strings are present, not that
 Apple access was checked. Start with `search_apps` for a public live check.
 

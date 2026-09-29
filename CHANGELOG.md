@@ -4,6 +4,23 @@ Changes to AppScope are recorded here. Version numbers describe the executable,
 MCP tools and data behavior together. Preview releases may change these contracts;
 check release notes before updating and back up private local data.
 
+## Unreleased
+
+- Added agent-led Apple account setup: a private native form, key import, ID
+  autofill, saved decisions and automatic continuation of the original request.
+- Added `start_connection`, `connection_status`, `connection_decision` and
+  `cancel_connection`, bringing source builds to 28 MCP tools. Background jobs
+  remain noninteractive; declines survive server restarts.
+- Added structured onboarding and scoped capability evidence to reports, setup,
+  refreshes and credential failures. Partial access and pending/disabled reports
+  stay distinct from missing or rejected credentials.
+- Credentials and key changes now reload without restarting MCP, invalidating
+  old Ads tokens and verification evidence. Setup uses fresh refresh runs so
+  earlier credential-related skips cannot be mistaken for new collection.
+- Added synthetic session, import, rotation, cancellation, restart and real MCP
+  transport coverage. Apple authentication and host invitation presentation still
+  require live qualification; this is not a published release.
+
 ## 0.0.2-alpha — 2026-09-07
 
 First public alpha. This release names the previously local 0.2.0 development

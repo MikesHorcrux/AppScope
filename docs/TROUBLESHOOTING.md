@@ -22,7 +22,7 @@ configuration into a chat or issue.
 | macOS blocks a downloaded executable | Check that it came from the intended release and matches its checksum. Verify the release's signing/notarization status with its maintainer. Do not disable Gatekeeper. Source installation is an alternative. |
 | Host cannot start the server | Use `command` pointing to the executable, with `args: ["serve"]`. Do not put shell syntax, quotes, or the word `serve` inside `command`. Check the host's stderr log. |
 | `appscope serve` appears to hang in Terminal | It is waiting for MCP messages on stdin. Use `appscope call` for direct testing; the MCP host normally launches `serve`. |
-| Host sees no tools | Restart that MCP connection after changing settings. Confirm it supports launching a local stdio server and has tools enabled. AppScope advertises 24 tools in v0.0.2-alpha. |
+| Host sees no tools | Restart that MCP connection after changing settings. Confirm it supports launching a local stdio server and has tools enabled. Current source builds advertise 28 tools; the published v0.0.2-alpha archive has 24. |
 | Terminal sees data but the host does not | Compare `APPSCOPE_DATA_DIR`, `APPSCOPE_CONFIG`, executable version and macOS user in both environments. A GUI host need not inherit Terminal's environment. |
 | Ranking batches time out | Start with `batch_size: 3`, follow `next_offset`, and use a host tool timeout of at least 120 seconds. An uncached 10-term batch includes roughly 30 seconds of pacing, plus network time/retries. |
 
@@ -38,7 +38,7 @@ Check the [installation guide](SETUP.md) for host configuration and updates.
 
 | Error or state | Meaning and next step |
 |---|---|
-| `credentials_missing` / `not_configured` | Fill the required fields for that provider in the local config. Apple Ads and App Store Connect are independent. Public searches remain available. |
+| `credentials_missing` / `not_configured` | Use the private connection window or `appscope configure` for that provider. Apple Ads and App Store Connect are independent. Public searches remain available. |
 | `configured_unverified` | All required strings are present. This state does not turn into a permanent verified badge after authentication. Test an actual provider call. |
 | `invalid_config` | Correct JSON syntax locally: double quotes, no comments or trailing commas. `setup` preserves existing files; rerunning it does not repair invalid JSON. |
 | `unsafe_permissions` | Set the actual config and private-key files to mode 0600. Do not loosen permissions to make a host work. |
@@ -54,8 +54,8 @@ For the default configuration location:
 chmod 600 "$HOME/Library/Application Support/AppScope/config.json"
 ```
 
-Apply `chmod 600` separately to your actual private-key file. Restart the MCP
-connection after config/key changes. AppScope intentionally withholds provider
+Apply `chmod 600` separately to your actual private-key file. Retry the tool
+call after config/key changes. AppScope intentionally withholds provider
 error bodies and native error details; this is why an error may be less detailed
 than a raw Apple response. See the [credential walkthrough](CREDENTIALS.md).
 

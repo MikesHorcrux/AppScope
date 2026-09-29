@@ -13,6 +13,7 @@ interactive GUI, `--json` flag, HTTP server mode, or built-in scheduler.
 | `appscope doctor` | Load config, open/create the local database and print capability/configuration presence; no network calls |
 | `appscope doctor --live APP_ID` | Check public lookup and configured Apple providers with bounded read-only requests; inspect nested statuses |
 | `appscope configure apple-ads` / `appscope configure app-store-connect` | Guided Terminal-only credential setup; validates the local key and saves private configuration atomically |
+| `appscope connection-window SESSION_ID` | Open the private native window for an existing setup session, using this process's data/config environment |
 | `appscope keygen apple-ads` | Generate P-256 key files in the data directory and print the public key; refuses to replace existing keys |
 | `appscope serve` | Serve MCP on stdin/stdout until the host disconnects; diagnostics go to stderr |
 | `appscope call TOOL 'JSON_OBJECT'` | Invoke the same implementation as MCP and print formatted JSON |
@@ -35,6 +36,7 @@ the JSON, not just the exit status. In MCP, a top-level tool failure uses
 |---|---|---|
 | `APPSCOPE_DATA_DIR` | `~/Library/Application Support/AppScope` | Root for SQLite data and the default configuration file |
 | `APPSCOPE_CONFIG` | `APPSCOPE_DATA_DIR/config.json` | Override only the credential configuration file |
+| `APPSCOPE_DISABLE_SETUP_UI` | Unset | Set to `1` to disable native setup launch; MCP returns a local fallback |
 
 Use absolute paths. AppScope does not load `.env` files or expand shell variables
 inside JSON. The private-key path supports `~` expansion, but absolute paths make
@@ -45,9 +47,9 @@ If `APPSCOPE_CONFIG` points outside the data directory, create its parent direct
 before running `setup`. Setup preserves an existing config file and checks its
 permissions. It does not validate configuration values against Apple.
 
-Changing either environment variable affects new processes. After changing
-credentials or configuration, restart the host's AppScope connection: a running
-process retains its loaded configuration and may have an in-memory Ads token.
+Changing either path environment variable affects new processes. Credential changes
+at those paths reload on the next tool call. Key replacement also invalidates the
+in-memory Ads token and prior verification evidence. No credential restart is needed.
 
 ## Build and installation environment
 
@@ -71,6 +73,8 @@ settings, unrelated to Apple Ads or App Store Connect API access.
 | `appscope.sqlite3` | Briefs, metadata, tracking, rankings, suggestion scores, analytics, refresh checkpoints, experiments and cached performance results |
 | `refresh-APP-COUNTRY.lock` | OS lock for same-app/country refresh exclusion; an existing file does not mean the lock is held |
 | `apple-ads-private.p8`, `apple-ads-public.pem` | Key pair created only by the explicit `keygen apple-ads` command |
+| `keys/` | Private copies imported by the setup window and locally prepared Apple Ads keys |
+| `connection-ui/` | Private app wrappers keyed by executable hash; same executable, no extra download |
 | `appscope.sqlite3-wal`, `appscope.sqlite3-shm` when present | SQLite working files; preserve them when copying an active database |
 
 No automatic retention/deletion policy is implemented in v0.2. Data can grow over

@@ -10,6 +10,7 @@ reasoning, scheduling, and the place where you read the report.
 | Get my first useful result without Apple credentials | [Getting started](GETTING-STARTED.md) |
 | Install, connect my host, update, or uninstall | [Installation and connection](SETUP.md) |
 | Add Apple popularity and performance data | [Apple credentials](CREDENTIALS.md) |
+| Let the agent handle account setup and continuation | [Private connections](CONNECTIONS.md) |
 | Refresh everything and recover interrupted jobs | [Refresh and health](REFRESH.md) |
 | Compare weekly/monthly ranks and competitors | [Trends](TRENDS.md) |
 | Record and compare ASO changes | [Experiments](EXPERIMENTS.md) |

@@ -1,5 +1,37 @@
 # Local validation
 
+## Private Apple connections — 2026-09-29
+
+Branch: `codex/apple-account-onboarding`. Unreleased source build on Apple Silicon
+with the Xcode macOS 27 SDK; deployment target remains macOS 14.
+
+- `swift test`: **47 tests passed**, including the real stdio MCP subprocess.
+  New coverage exercises invitation/decline persistence, background suppression,
+  scoped and expired verification, partial access, pending reports, private key
+  import, stale edit rejection, credential/key rotation without restart, bounded
+  continuation across restart, cancellation, concurrent workers, repair, and
+  fresh refresh IDs with preserved provider options.
+- The real MCP test discovers 28 tools, reads an interactive invitation, starts
+  and cancels a setup session with UI disabled, rejects credential arguments,
+  and sees externally saved credentials without restarting the process.
+- Both native provider forms were opened and visually inspected. An isolated
+  App Store Connect form selected a synthetic `.p8`, filled the key ID from its
+  filename, accepted a dummy issuer ID, saved, and closed. The session became
+  `saved`; imported key/config modes were 0600 and the source remained intact.
+  Apple Ads prepared a private key and exposed its public-key copy action.
+  Cancelling both provider flows was read back from local session records.
+- Native testing caught a file-type filter that could disable valid `.p8` files.
+  The picker now accepts file selection and validates P-256 contents locally.
+- `swift format lint --strict` passed for changed Swift files. Generated schemas,
+  all 28 examples, fenced JSON and relative links passed the documentation check.
+
+All credentials and provider responses in these checks were synthetic and stored
+in isolated directories. No real Apple account was connected, no reports were
+enabled, and no listings or campaigns changed. Still to qualify: real Apple
+authentication/roles/report availability, an agent host visibly presenting the
+invitation and delivering the completed report, packaged/Gatekeeper behavior,
+and Intel/macOS 14 runtime operation. Local tests do not establish those outcomes.
+
 ## Public alpha candidate — 2026-09-07
 
 Version 0.0.2-alpha names the previously local 0.2.0 feature set for the first

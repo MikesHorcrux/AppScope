@@ -2,11 +2,11 @@
   {
     "annotations" : {
       "destructiveHint" : false,
-      "idempotentHint" : true,
+      "idempotentHint" : false,
       "openWorldHint" : true,
-      "readOnlyHint" : true
+      "readOnlyHint" : false
     },
-    "description" : "Make bounded read-only live provider checks for this app. Unconfigured providers are skipped. Tests public lookup, Apple Ads suggestions and App Store Connect app/report-request access. Does not enable or import reports, expose credentials or persist results.",
+    "description" : "With the user's consent, prepare a private native setup window for one Apple account and remember the request to continue. Never supply credentials. Background calls never open UI; existing configured accounts are verified without a window. Poll connection_status after the user saves. Reuse the returned session on retries.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
@@ -19,6 +19,225 @@
         "country" : {
           "description" : "Two-letter ISO storefront country; defaults to us",
           "maxLength" : 2,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "interaction" : {
+          "default" : "background",
+          "description" : "Use interactive only in a live user conversation; background is the default.",
+          "enum" : [
+            "interactive",
+            "background"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "provider" : {
+          "description" : "Apple account to connect",
+          "enum" : [
+            "apple_ads",
+            "app_store_connect"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "reopen_window" : {
+          "default" : false,
+          "description" : "Reopen an existing waiting session only when the user asks.",
+          "type" : "boolean"
+        },
+        "resume_arguments" : {
+          "additionalProperties" : true,
+          "description" : "Original tool arguments, validated against resume_tool. No credentials or arbitrary commands.",
+          "type" : "object"
+        },
+        "resume_tool" : {
+          "description" : "Original request; defaults to daily_report for an app, owned_apps without app_id",
+          "enum" : [
+            "daily_report",
+            "aso_strategy",
+            "refresh_app",
+            "app_performance",
+            "keyword_suggestions",
+            "search_term_popularity",
+            "owned_apps"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "retry" : {
+          "default" : false,
+          "description" : "Explicit user retry overrides a saved decline or deferral.",
+          "type" : "boolean"
+        }
+      },
+      "required" : [
+        "provider",
+        "interaction"
+      ],
+      "type" : "object"
+    },
+    "name" : "start_connection"
+  },
+  {
+    "annotations" : {
+      "destructiveHint" : false,
+      "idempotentHint" : false,
+      "openWorldHint" : true,
+      "readOnlyHint" : false
+    },
+    "description" : "Read setup progress and collect the completed request. The running server verifies and continues automatically after saving. This tool also recovers an interrupted continuation. Use wait_seconds 20 while the user completes private setup. Stop polling on needs_attention, cancelled, expired or completed. No secrets are returned.",
+    "inputSchema" : {
+      "additionalProperties" : false,
+      "properties" : {
+        "max_steps" : {
+          "default" : 5,
+          "description" : "Refresh steps per call",
+          "maximum" : 20,
+          "minimum" : 1,
+          "type" : "integer"
+        },
+        "retry" : {
+          "default" : false,
+          "description" : "Retry a failed verification or continuation after addressing its cause.",
+          "type" : "boolean"
+        },
+        "session_id" : {
+          "description" : "Setup session UUID returned by start_connection",
+          "maxLength" : 36,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "wait_seconds" : {
+          "default" : 0,
+          "description" : "Wait briefly for private setup to finish without blocking the helper",
+          "maximum" : 20,
+          "minimum" : 0,
+          "type" : "integer"
+        }
+      },
+      "required" : [
+        "session_id"
+      ],
+      "type" : "object"
+    },
+    "name" : "connection_status"
+  },
+  {
+    "annotations" : {
+      "destructiveHint" : false,
+      "idempotentHint" : false,
+      "openWorldHint" : false,
+      "readOnlyHint" : false
+    },
+    "description" : "Record the user's choice for this provider and app across chats and restarts. later suppresses invitations for seven days; decline suppresses until an explicit start_connection retry. Does not disconnect an existing account.",
+    "inputSchema" : {
+      "additionalProperties" : false,
+      "properties" : {
+        "app_id" : {
+          "description" : "Numeric App Store app ID",
+          "maxLength" : 20,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "decision" : {
+          "description" : "The user's choice",
+          "enum" : [
+            "later",
+            "decline"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "provider" : {
+          "description" : "Apple account to connect",
+          "enum" : [
+            "apple_ads",
+            "app_store_connect"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
+        }
+      },
+      "required" : [
+        "provider",
+        "decision"
+      ],
+      "type" : "object"
+    },
+    "name" : "connection_decision"
+  },
+  {
+    "annotations" : {
+      "destructiveHint" : false,
+      "idempotentHint" : false,
+      "openWorldHint" : false,
+      "readOnlyHint" : false
+    },
+    "description" : "Cancel a setup session. Retains any credentials already saved and any collected evidence; stops continuation.",
+    "inputSchema" : {
+      "additionalProperties" : false,
+      "properties" : {
+        "session_id" : {
+          "description" : "Setup session UUID returned by start_connection",
+          "maxLength" : 36,
+          "minLength" : 1,
+          "type" : "string"
+        }
+      },
+      "required" : [
+        "session_id"
+      ],
+      "type" : "object"
+    },
+    "name" : "cancel_connection"
+  },
+  {
+    "annotations" : {
+      "destructiveHint" : false,
+      "idempotentHint" : false,
+      "openWorldHint" : true,
+      "readOnlyHint" : false
+    },
+    "description" : "Make bounded read-only live provider checks for this app. Unconfigured providers are skipped. Optionally check one provider. Saves sanitized capability evidence locally; never enables or imports reports or exposes credentials.",
+    "inputSchema" : {
+      "additionalProperties" : false,
+      "properties" : {
+        "app_id" : {
+          "description" : "Numeric App Store app ID",
+          "maxLength" : 20,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "country" : {
+          "description" : "Two-letter ISO storefront country; defaults to us",
+          "maxLength" : 2,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "interaction" : {
+          "default" : "background",
+          "description" : "Use interactive only in a live user conversation; background is the default.",
+          "enum" : [
+            "interactive",
+            "background"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "provider" : {
+          "description" : "Apple account to connect",
+          "enum" : [
+            "apple_ads",
+            "app_store_connect"
+          ],
+          "maxLength" : 200,
           "minLength" : 1,
           "type" : "string"
         }
@@ -270,7 +489,29 @@
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
-
+        "app_id" : {
+          "description" : "Numeric App Store app ID",
+          "maxLength" : 20,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "country" : {
+          "description" : "Two-letter ISO storefront country; defaults to us",
+          "maxLength" : 2,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "interaction" : {
+          "default" : "background",
+          "description" : "Use interactive only in a live user conversation; background is the default.",
+          "enum" : [
+            "interactive",
+            "background"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
+        }
       },
       "required" : [
 
@@ -302,15 +543,25 @@
   {
     "annotations" : {
       "destructiveHint" : false,
-      "idempotentHint" : true,
+      "idempotentHint" : false,
       "openWorldHint" : true,
-      "readOnlyHint" : true
+      "readOnlyHint" : false
     },
-    "description" : "List your apps through App Store Connect; requires credentials.",
+    "description" : "List your apps through App Store Connect; requires credentials. Saves sanitized connection evidence locally.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
-
+        "interaction" : {
+          "default" : "background",
+          "description" : "Use interactive only in a live user conversation; background is the default.",
+          "enum" : [
+            "interactive",
+            "background"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
+        }
       },
       "required" : [
 
@@ -695,6 +946,17 @@
           "minLength" : 1,
           "type" : "string"
         },
+        "interaction" : {
+          "default" : "background",
+          "description" : "Use interactive only in a live user conversation; background is the default.",
+          "enum" : [
+            "interactive",
+            "background"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
+        },
         "offset" : {
           "default" : 0,
           "description" : "Apple pagination offset",
@@ -724,9 +986,9 @@
   {
     "annotations" : {
       "destructiveHint" : false,
-      "idempotentHint" : true,
+      "idempotentHint" : false,
       "openWorldHint" : true,
-      "readOnlyHint" : true
+      "readOnlyHint" : false
     },
     "description" : "Query top eligible Apple search terms by genre for complete Sunday–Saturday weeks. rankInGenre means term demand, not your app's rank. Requires Apple Ads credentials.",
     "inputSchema" : {
@@ -747,6 +1009,17 @@
         "genre" : {
           "description" : "Apple genre enum, e.g. PRODUCTIVITY_UTILITIES",
           "maxLength" : 100,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "interaction" : {
+          "default" : "background",
+          "description" : "Use interactive only in a live user conversation; background is the default.",
+          "enum" : [
+            "interactive",
+            "background"
+          ],
+          "maxLength" : 200,
           "minLength" : 1,
           "type" : "string"
         },
@@ -813,6 +1086,17 @@
           "minLength" : 1,
           "type" : "string"
         },
+        "interaction" : {
+          "default" : "background",
+          "description" : "Use interactive only in a live user conversation; background is the default.",
+          "enum" : [
+            "interactive",
+            "background"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
+        },
         "start" : {
           "description" : "Period start YYYY-MM-DD",
           "maxLength" : 10,
@@ -860,6 +1144,17 @@
           "maxLength" : 2,
           "minLength" : 1,
           "type" : "string"
+        },
+        "interaction" : {
+          "default" : "background",
+          "description" : "Use interactive only in a live user conversation; background is the default.",
+          "enum" : [
+            "interactive",
+            "background"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
         }
       },
       "required" : [
@@ -889,6 +1184,17 @@
         "country" : {
           "description" : "Two-letter ISO storefront country; defaults to us",
           "maxLength" : 2,
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "interaction" : {
+          "default" : "background",
+          "description" : "Use interactive only in a live user conversation; background is the default.",
+          "enum" : [
+            "interactive",
+            "background"
+          ],
+          "maxLength" : 200,
           "minLength" : 1,
           "type" : "string"
         }
@@ -930,6 +1236,17 @@
         "include_popularity" : {
           "default" : true,
           "type" : "boolean"
+        },
+        "interaction" : {
+          "default" : "background",
+          "description" : "Use interactive only in a live user conversation; background is the default.",
+          "enum" : [
+            "interactive",
+            "background"
+          ],
+          "maxLength" : 200,
+          "minLength" : 1,
+          "type" : "string"
         },
         "max_steps" : {
           "default" : 120,

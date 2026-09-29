@@ -12,7 +12,14 @@ AppScope service or paste them into an agent conversation.
 The Apple keys are separate. AppScope v0.2 supports App Store Connect **team keys**
 with an issuer ID, not the distinct individual-key authentication flow.
 
-## Guided setup
+## Connect through your agent
+
+Ask your agent to connect the account needed for your report. AppScope opens a
+private setup window with the correct Apple account link, a key file picker, and
+ID fields. The agent never receives key bytes. The running server checks access
+and continues the saved request after you save. [Connection flow and host contract](CONNECTIONS.md).
+
+## Terminal fallback
 
 Run these in Terminal, not through an MCP tool or a piped agent prompt:
 
@@ -24,8 +31,8 @@ appscope configure app-store-connect
 Configure only the provider you need. The guided flow asks for identifiers and an
 existing private-key **path**, never private-key bytes. Return preserves an
 existing field; Ctrl-D cancels without saving. It checks key format/permissions,
-preserves the other provider, and atomically saves a 0600 config file. Restart
-the MCP connection afterward. Manual editing remains supported below.
+preserves the other provider, and atomically saves a 0600 config file. Credentials
+reload on the next tool call. Manual editing remains supported below.
 
 If you need an Apple Ads key pair before creating its API client:
 
@@ -84,8 +91,7 @@ chmod 600 /absolute/path/to/your-private-key.p8
 The second path is a placeholder. Keep keys outside the checkout; a private
 AppScope directory is a suitable location. A `.p8` or `.pem` extension does not
 establish validity: the contents must be a readable, unencrypted P-256 PEM key.
-AppScope reads local configuration when the process starts; restart the host's
-AppScope connection after editing it. It does not load `.env` files.
+AppScope reloads local configuration and key changes before the next tool call. It does not load `.env` files.
 
 ## Apple Ads
 
@@ -98,11 +104,11 @@ AppScope connection after editing it. It does not load `.env` files.
    into `apple_ads`, plus the private-key path. Do not assume the legacy org ID
    is interchangeable with the Platform account ID.
 
-Follow [Apple's account/API setup](https://ads.apple.com/maps/apple-ads/help/campaigns/0022-use-apple-ads-platform-api)
+Follow [Apple's account/API setup](https://ads.apple.com/app-store/help/campaigns/0022-use-the-apple-ads-platform-api)
 for the current account screens and client creation requirements. AppScope does
 not include Apple account administration; use `keygen apple-ads` for local keys.
 
-Restart AppScope, then validate with a small research call for your actual app:
+Validate with a small research call for your actual app:
 
 ```sh
 appscope call keyword_suggestions '{"app_id":"1234567890","country":"us","seeds":["relevant seed term"]}'
@@ -133,7 +139,7 @@ appscope enable-reports 1234567890 --confirm
 Replace the fictional ID. This is the one CLI command that creates an Apple-side
 resource: an ongoing report request. It is not exposed as an MCP tool. An existing
 active ongoing request returns `already_enabled`. Restore a Sales and Reports
-key for routine downloads and restart the MCP process afterward. Initial reports
+key for routine downloads; AppScope reloads it on the next call. Initial reports
 may take 24–48 hours. See [Apple's report roles and lifecycle](https://developer.apple.com/documentation/appstoreconnectapi/downloading-analytics-reports).
 
 ### Validate access and data separately
@@ -151,8 +157,8 @@ its dates. [Response details](RESPONSES.md) explain how to interpret both.
 ## Rotation and recovery
 
 Keep a backup of required key files using your normal secure storage. If a key
-is revoked or replaced, update the local IDs/path and restart every host process
-using it. Revoke compromised keys in the corresponding Apple account. Removing
+is revoked or replaced, update it in the private window or local configuration.
+Running AppScope processes reload the change and discard cached Ads tokens. Revoke compromised keys in the corresponding Apple account. Removing
 an AppScope binary or configuration file does not revoke Apple credentials.
 
 Never post config, private keys, raw authenticated responses or the database in

@@ -3,6 +3,14 @@
 AppScope provides evidence. The agent supplies research judgment and scheduling.
 All examples describe proposed work, not permission to publish metadata or run ads.
 
+## Connect missing accounts during a conversation
+
+Use `interaction: interactive` on a relevant request. Read `onboarding`, present
+one invitation when `should_invite` is true, and record a later/decline response.
+With consent, start the private setup session and keep its original request.
+AppScope reloads saved credentials and continues it; the agent retrieves the result.
+See [the connection flow](CONNECTIONS.md) and [copyable host prompt](../examples/interactive-setup.md).
+
 ## Understand the app and propose audiences
 
 Call `app_profile` and read the description, genre, positioning and owner brief.
@@ -68,7 +76,7 @@ The owner must review listing changes and Apple's current rules before publishin
 
 Recommended workflow for a host-owned scheduled job:
 
-1. Call `refresh_app`. It collects sources in order and returns `run` plus `report`.
+1. Call `refresh_app` with `interaction: background`. It collects sources in order and returns `run` plus `report`.
    For short host timeouts, use `max_steps: 3` and resume the returned `run_id` while
    paused. Retry failed steps at most once per job, then report unresolved failures.
 2. Inspect `report.health`, each source date and the run's skipped/failed steps.
