@@ -65,7 +65,7 @@ extension AppScope {
         "Saved status is a checkpoint, not proof a process is still alive. Resume recovers interrupted steps.",
     ])
   }
-  func refreshApp(app: String, country: String, args: JSON, progress: RefreshProgress?) async throws
+  func refreshApp(app: String, country: String, args: JSON, progress: RefreshProgress?, preparedRunID: String? = nil) async throws
     -> JSON
   {
     if args["run_id"] != .null && args["new_run"].boolValue == true {
@@ -73,8 +73,13 @@ extension AppScope {
     }
     let lock = try RefreshLock(directory: config.directory, app: app, country: country)
     defer { lock.release() }
-    let latest = try await loadRefresh(app: app, country: country, id: args["run_id"].stringValue)
-    let explicit = args["run_id"] != .null
+    let latest: JSON?
+    if let preparedRunID {
+      latest = try await database.get("refresh_run", preparedRunID)
+    } else {
+      latest = try await loadRefresh(app: app, country: country, id: args["run_id"].stringValue)
+    }
+    let explicit = args["run_id"] != .null || (preparedRunID != nil && latest != nil)
     let resume =
       explicit
       || (args["new_run"].boolValue != true && latest?["day"].text == day()
@@ -113,7 +118,7 @@ extension AppScope {
       steps += terms.map { ["kind": "ranking", "keyword": .string($0), "status": "pending"] }
       if includePerformance { steps.append(["kind": "performance", "status": "pending"]) }
       run = [
-        "run_id": .string(UUID().uuidString.lowercased()), "app_id": .string(app),
+        "run_id": .string(preparedRunID ?? UUID().uuidString.lowercased()), "app_id": .string(app),
         "country": .string(country), "day": .string(day()), "started_at": .string(timestamp()),
         "status": "running", "keywords": .strings(terms), "steps": .array(steps),
         "include_popularity": .bool(includePopularity),

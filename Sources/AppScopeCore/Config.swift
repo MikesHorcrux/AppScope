@@ -5,9 +5,15 @@ import MCP
 public struct Configuration: Sendable {
   public let directory: URL
   public let values: JSON
-  public init(directory: URL, values: JSON = .object([:])) {
+  public let sourceURL: URL?
+  private let fingerprints: [String: String]
+  public init(directory: URL, values: JSON = .object([:]), sourceURL: URL? = nil) {
     self.directory = directory
     self.values = values
+    self.sourceURL = sourceURL
+    fingerprints = Dictionary(uniqueKeysWithValues: ["apple_ads", "app_store_connect"].map { provider in
+      (provider, Self.fingerprint(values: values, provider: provider))
+    })
   }
   public static func load(environment: [String: String] = ProcessInfo.processInfo.environment)
     throws -> Configuration
@@ -20,7 +26,7 @@ public struct Configuration: Sendable {
       environment["APPSCOPE_CONFIG"].map { URL(fileURLWithPath: $0) }
       ?? directory.appendingPathComponent("config.json")
     guard FileManager.default.fileExists(atPath: path.path) else {
-      return Configuration(directory: directory)
+      return Configuration(directory: directory, sourceURL: path)
     }
     try checkPrivateFile(path)
     do {
@@ -28,7 +34,7 @@ public struct Configuration: Sendable {
       guard values.objectValue != nil else {
         throw ScopeError("invalid_config", "Configuration must be a JSON object.")
       }
-      return Configuration(directory: directory, values: values)
+      return Configuration(directory: directory, values: values, sourceURL: path)
     } catch {
       throw ScopeError(
         "invalid_config", "AppScope configuration must be valid JSON. Run appscope setup.")
@@ -46,9 +52,28 @@ public struct Configuration: Sendable {
     guard credentialStatus(name) == "configured_unverified" else {
       throw ScopeError(
         "credentials_missing",
-        "Configure \(name) locally with appscope setup. Public searches still work.")
+        "Connect \(name) with start_connection, or run appscope configure \(name.replacingOccurrences(of: "_", with: "-")). Public searches still work.")
     }
     return values[name]
+  }
+  public var environment: [String: String] {
+    ["APPSCOPE_DATA_DIR": directory.path,
+     "APPSCOPE_CONFIG": (sourceURL ?? directory.appendingPathComponent("config.json")).path]
+  }
+
+  /// Kept only in local evidence records; never returned to the agent.
+  func credentialFingerprint(_ provider: String) -> String {
+    fingerprints[provider] ?? ""
+  }
+  private static func fingerprint(values: JSON, provider: String) -> String {
+    var bytes = (try? values[provider].encoded()) ?? Data()
+    let path = URL(fileURLWithPath: values[provider]["private_key_path"].text)
+    if (try? Self.checkPrivateFile(path)) != nil,
+      let key = try? PrivateFile.readKey(path)
+    {
+      bytes.append(key)
+    }
+    return SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
   }
   public static func checkPrivateFile(_ url: URL) throws {
     let attrs = try FileManager.default.attributesOfItem(atPath: url.path)
@@ -69,7 +94,7 @@ public struct Configuration: Sendable {
     do {
       try Self.checkPrivateFile(keyURL)
       let key = try P256.Signing.PrivateKey(
-        pemRepresentation: String(contentsOf: keyURL, encoding: .utf8))
+        pemRepresentation: String(decoding: PrivateFile.readKey(keyURL), as: UTF8.self))
       let seconds = Int(now.timeIntervalSince1970)
       let header: JSON = ["alg": "ES256", "kid": settings["key_id"], "typ": "JWT"]
       let claims: JSON =

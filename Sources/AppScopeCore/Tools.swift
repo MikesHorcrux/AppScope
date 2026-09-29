@@ -20,6 +20,9 @@ public enum ToolCatalog {
   static let app = string("Numeric App Store app ID", max: 20)
   static let country = string("Two-letter ISO storefront country; defaults to us", max: 2)
   static let keyword = string("Search phrase", max: 100)
+  static let interaction: JSON = string("Use interactive only in a live user conversation; background is the default.").setting(["enum": ["interactive", "background"], "default": "background"])
+  static let provider: JSON = string("Apple account to connect").setting(["enum": .strings(Onboarding.providers)])
+  static let sessionID = string("Setup session UUID returned by start_connection", max: 36)
   static let common: [String: JSON] = ["app_id": app, "country": country]
   static func tool(
     _ name: String, _ description: String, _ properties: [String: JSON], required: [String] = [],
@@ -28,7 +31,8 @@ public enum ToolCatalog {
     Tool(
       name: name, description: description,
       inputSchema: [
-        "type": "object", "properties": .object(properties), "required": .strings(required),
+        "type": "object", "properties": .object(Onboarding.relevantTools.contains(name)
+          ? properties.merging(["interaction": interaction]) { old, _ in old } : properties), "required": .strings(required),
         "additionalProperties": false,
       ],
       annotations: .init(
@@ -41,10 +45,31 @@ public enum ToolCatalog {
   }
   static let experimentID = string("Experiment UUID returned by AppScope", max: 36)
   public static let all: [Tool] = [
+    tool("start_connection",
+      "With the user's consent, prepare a private native setup window for one Apple account and remember the request to continue. Never supply credentials. Background calls never open UI; existing configured accounts are verified without a window. Poll connection_status after the user saves. Reuse the returned session on retries.",
+      fields(["provider": provider, "interaction": interaction,
+        "resume_tool": string("Original request to continue; defaults to daily_report").setting(["enum": .strings(Onboarding.continuationTools)]),
+        "resume_arguments": ["type": "object", "description": "Original tool arguments, validated against resume_tool. No credentials or arbitrary commands.", "additionalProperties": true],
+        "retry": ["type": "boolean", "description": "Explicit user retry overrides a saved decline or deferral.", "default": false],
+        "reopen_window": ["type": "boolean", "description": "Reopen an existing waiting session only when the user asks.", "default": false]]),
+      required: ["provider", "app_id", "interaction"], localWrite: true),
+    tool("connection_status",
+      "Read setup progress. Once credentials are saved, reload them, verify only the selected provider and continue the original read-only Apple request. Refreshes advance in bounded batches; poll while state is refreshing. Stop polling on awaiting_user, needs_attention, cancelled, expired or completed. No secrets are returned.",
+      ["session_id": sessionID,
+       "max_steps": integer("Refresh steps per call", min: 1, max: 20, default: 5),
+       "retry": ["type": "boolean", "description": "Retry a failed verification or continuation after addressing its cause.", "default": false]],
+      required: ["session_id"], localWrite: true),
+    tool("connection_decision",
+      "Record the user's choice for this provider and app across chats and restarts. later suppresses invitations for seven days; decline suppresses until an explicit start_connection retry. Does not disconnect an existing account.",
+      ["provider": provider, "app_id": app,
+       "decision": string("The user's choice").setting(["enum": ["later", "decline"]])],
+      required: ["provider", "app_id", "decision"], localWrite: true, external: false),
+    tool("cancel_connection", "Cancel a setup session. Retains any credentials already saved and any collected evidence; stops continuation.",
+      ["session_id": sessionID], required: ["session_id"], localWrite: true, external: false),
     tool(
       "check_connections",
-      "Make bounded read-only live provider checks for this app. Unconfigured providers are skipped. Tests public lookup, Apple Ads suggestions and App Store Connect app/report-request access. Does not enable or import reports, expose credentials or persist results.",
-      common, required: ["app_id"]),
+      "Make bounded read-only live provider checks for this app. Unconfigured providers are skipped. Optionally check one provider. Saves sanitized capability evidence locally; never enables or imports reports or exposes credentials.",
+      fields(["provider": provider]), required: ["app_id"], localWrite: true),
     tool(
       "record_experiment",
       "Record an ASO change, hypothesis, UTC release date, comparison window and up to 20 terms. Saves a baseline from existing local evidence; does not collect or publish. Supply a stable experiment_id UUID for safe retries; reusing it with different details is rejected.",
@@ -85,7 +110,7 @@ public enum ToolCatalog {
     tool(
       "setup_status",
       "Check capabilities and whether Apple credentials are configured. Does not reveal credentials or make network calls.",
-      [:], external: false),
+      common, external: false),
     tool("list_apps", "List locally saved app briefs and tracked keywords.", [:], external: false),
     tool("owned_apps", "List your apps through App Store Connect; requires credentials.", [:]),
     tool(
@@ -229,6 +254,7 @@ public enum ToolCatalog {
           $0 >= schema["minimum"].intValue! && $0 <= schema["maximum"].intValue!
         } ?? false
       case "boolean": return value.boolValue != nil
+      case "object": return value.objectValue != nil
       case "array":
         return value.arrayValue.map {
           $0.count <= schema["maxItems"].intValue! && $0.allSatisfy { check($0, schema["items"]) }
@@ -239,6 +265,10 @@ public enum ToolCatalog {
     guard args.allSatisfy({ check($0.value, properties[$0.key]!) }) else {
       throw ScopeError(
         "invalid_arguments", "Tool argument types or limits are invalid. Read the tool schema.")
+    }
+    if name == "start_connection", let resume = args["resume_arguments"]?.objectValue {
+      let tool = args["resume_tool"]?.text ?? "daily_report"
+      try validate(tool, resume)
     }
   }
 }

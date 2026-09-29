@@ -5,8 +5,13 @@ import Foundation
 import MCP
 
 @main struct AppScopeCLI {
-  static func main() async {
-    do { try await run() } catch let error as ScopeError {
+  @MainActor static func main() async {
+    do {
+      if CommandLine.arguments.dropFirst().first == "connection-window" {
+        guard CommandLine.arguments.count == 3 else { throw ScopeError("usage", "Use appscope connection-window SESSION_ID") }
+        try ConnectionWindow.run(sessionID: CommandLine.arguments[2])
+      } else { try await run() }
+    } catch let error as ScopeError {
       fputs("AppScope [\(error.code)]: \(error.message)\n", stderr)
       exit(1)
     } catch {
@@ -28,6 +33,7 @@ import MCP
         appscope doctor                      Check local setup (no network)
         appscope doctor --live APP_ID         Check configured providers (read-only network)
         appscope configure PROVIDER          Guided local setup: apple-ads or app-store-connect
+        appscope connection-window SESSION_ID  Open a private setup session created by your agent
         appscope keygen apple-ads             Create a private P-256 key and print its public key
         appscope call TOOL '{"arg":"value"}'  Call a tool directly and print JSON
         appscope enable-reports APP_ID --confirm  One-time Apple report enablement (Admin)
@@ -62,7 +68,7 @@ import MCP
       return
     }
     let configuration = try Configuration.load()
-    let scope = try AppScope(config: configuration)
+    let scope = try AppScope(config: configuration, connectionLauncher: ConnectionWindowLauncher.launch)
     switch args[0] {
     case "doctor":
       if args.count == 1 {
@@ -164,7 +170,7 @@ import MCP
     print(
       "Saved private local configuration. Key format and permissions checked; Apple access is still unverified."
     )
-    print("Restart the MCP connection. To test access: appscope doctor --live YOUR_NUMERIC_APP_ID")
+    print("AppScope reloads credentials on the next tool call. To test access: appscope doctor --live YOUR_NUMERIC_APP_ID")
   }
   static func setup() throws {
     let environment = ProcessInfo.processInfo.environment

@@ -2,13 +2,17 @@ import Foundation
 import MCP
 
 public actor AppScope {
-  public let config: Configuration
+  public private(set) var config: Configuration
   public let database: Database
   let storefront: Storefront
-  let ads: AppleAds
-  let connect: AppStoreConnect
-  public init(config: Configuration, http: HTTP = HTTP()) throws {
+  var ads: AppleAds
+  var connect: AppStoreConnect
+  let http: HTTP
+  let connectionLauncher: ConnectionLauncher?
+  public init(config: Configuration, http: HTTP = HTTP(), connectionLauncher: ConnectionLauncher? = nil) throws {
     self.config = config
+    self.http = http
+    self.connectionLauncher = connectionLauncher
     database = try Database(directory: config.directory)
     storefront = Storefront(http: http)
     ads = AppleAds(config: config, http: http)
@@ -31,7 +35,48 @@ public actor AppScope {
     async throws -> JSON
   {
     try ToolCatalog.validate(name, args)
+    try reloadConfiguration()
+    let before = config
+    do {
+      let result = try await execute(name, args, progress: progress)
+      try await observeConnectionResult(name: name, args: args, result: result, configuration: before)
+      guard Onboarding.relevantTools.contains(name) else { return result }
+      return try await result.setting(["onboarding": onboarding(name: name, args: args)])
+    } catch let error as ScopeError {
+      if let provider = Onboarding.provider(for: name) {
+        try await saveConnectionEvidence(provider: provider, app: args["app_id"]?.text ?? "*",
+          country: args["country"]?.text.lowercased() ?? "us", error: error, configuration: before)
+      }
+      guard Onboarding.relevantTools.contains(name) else { throw error }
+      throw ScopeError(error.code, error.message, onboarding: try await onboarding(name: name, args: args))
+    }
+  }
+
+  public func reloadConfiguration() throws {
+    guard config.sourceURL != nil else { return }
+    let updated = try Configuration.load(environment: config.environment)
+    // Recreate clients even when only the key file changed, invalidating cached Ads tokens.
+    guard updated.values != config.values || Onboarding.providers.contains(where: {
+      credentialFingerprints[$0] != updated.credentialFingerprint($0)
+    }) else { return }
+    config = updated
+    ads = AppleAds(config: updated, http: http)
+    connect = AppStoreConnect(config: updated, http: http, database: database)
+    credentialFingerprints = Dictionary(uniqueKeysWithValues: Onboarding.providers.map {
+      ($0, updated.credentialFingerprint($0))
+    })
+  }
+  var credentialFingerprints: [String: String] = [:]
+
+  func execute(_ name: String, _ args: [String: JSON], progress: RefreshProgress?) async throws -> JSON {
     let a = JSON.object(args)
+    switch name {
+    case "start_connection": return try await startConnection(a)
+    case "connection_status": return try await advanceConnection(a, progress: progress)
+    case "connection_decision": return try await recordConnectionDecision(a)
+    case "cancel_connection": return try await cancelConnection(a["session_id"].text)
+    default: break
+    }
     if name == "setup_status" { return status() }
     if name == "list_apps" {
       return [
@@ -43,7 +88,7 @@ public actor AppScope {
     let app = try a["app_id"].stringValue.map(Validate.appID)
     let country = try Validate.country(a["country"].stringValue ?? "us")
     switch name {
-    case "check_connections": return try await checkConnections(app: app!, country: country)
+    case "check_connections": return try await checkConnections(app: app!, country: country, provider: a["provider"].stringValue)
     case "record_experiment":
       return ["experiment": try await recordExperiment(app: app!, country: country, args: a)]
     case "update_experiment":

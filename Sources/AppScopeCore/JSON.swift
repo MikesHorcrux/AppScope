@@ -5,13 +5,17 @@ public typealias JSON = Value
 public struct ScopeError: Error, LocalizedError, Sendable {
   public let code: String
   public let message: String
-  public init(_ code: String, _ message: String) {
+  public let onboarding: JSON?
+  public init(_ code: String, _ message: String, onboarding: JSON? = nil) {
     self.code = code
     self.message = message
+    self.onboarding = onboarding
   }
   public var errorDescription: String? { message }
   public var json: JSON {
-    .object(["status": "error", "code": .string(code), "message": .string(message)])
+    var fields: [String: JSON] = ["status": "error", "code": .string(code), "message": .string(message)]
+    if let onboarding { fields["onboarding"] = onboarding }
+    return .object(fields)
   }
 }
 
