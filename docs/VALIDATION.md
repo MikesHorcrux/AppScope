@@ -23,6 +23,13 @@ quarantined-download/Gatekeeper behavior remain unverified. Ad-hoc signing does
 not establish Developer ID signing or notarization. The Relic ticket's live
 acceptance work remains In Progress.
 
+Source review also found no account namespace for private caches or stable
+account binding for already-refreshing continuations. Setup permits credential
+replacement without enforcing account isolation. Separate config/data instances
+are documented for different accounts, but that arrangement has not been
+qualified with multiple live accounts. The source warnings do not implement a
+replacement guard or a multiaccount routing system.
+
 ## Onboarding contract follow-up — 2026-10-02
 
 Prepared on `codex/onboarding-qualification` in an isolated copy of

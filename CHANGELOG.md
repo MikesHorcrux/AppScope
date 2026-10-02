@@ -9,6 +9,9 @@ check release notes before updating and back up private local data.
 Private Apple account setup and resumable agent requests. This alpha remains
 ad-hoc signed, not Developer ID signed or notarized.
 
+- Documented the one-account-per-provider limit and warned that credential
+  replacement keeps cached private data and does not safely switch a running
+  continuation. Account isolation and a replacement guard are not implemented.
 - Universal packaging builds each architecture with native SwiftPM and combines
   them with `lipo`, avoiding Swift 6.1's combined-build manifest failure. Finder
   metadata is omitted from the archive.

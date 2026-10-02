@@ -115,6 +115,12 @@ continues the request. Your host must present the invitation and retrieve the
 result; that complete live workflow still needs qualification. Keys stay on your
 Mac. See [the connection flow](docs/CONNECTIONS.md).
 
+**Each instance supports one account per provider.** Do not switch Apple teams
+or ad accounts by replacing credentials in a shared data directory. Cached
+private data remains, and an already-refreshing request is not bound to the
+account it verified. Use separate MCP instances with distinct configuration
+and data directories. [Account limits and isolation](docs/CREDENTIALS.md#one-account-per-provider)
+
 Terminal setup remains available:
 
 ```sh

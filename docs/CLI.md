@@ -44,6 +44,12 @@ inside JSON. The private-key path supports `~` expansion, but absolute paths mak
 sharing host configurations clearer. Set environment overrides in the MCP host,
 not only an unrelated Terminal session. The host must be able to read the files.
 
+**Changing only `APPSCOPE_CONFIG` does not isolate account data.** Each instance
+supports one account per provider. For another Apple team/ad account, use a
+separate instance with distinct config and data directories. Replacing credentials
+keeps cached private data, and already-refreshing continuations are not bound to
+an account identity. [Account limits](CREDENTIALS.md#one-account-per-provider)
+
 If `APPSCOPE_CONFIG` points outside the data directory, create its parent directory
 before running `setup`. Setup preserves an existing config file and checks its
 permissions. It does not validate configuration values against Apple.

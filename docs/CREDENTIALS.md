@@ -12,6 +12,28 @@ AppScope service or paste them into an agent conversation.
 The Apple keys are separate. AppScope v0.0.3-alpha supports App Store Connect **team keys**
 with an issuer ID, not the distinct individual-key authentication flow.
 
+## One account per provider
+
+One configuration holds one App Store Connect team key and one Apple Ads Platform
+ad account. Multiple apps accessible to that key/account are supported. An Apple
+ID belonging to several teams does not enable simultaneous account selection or
+automatic routing in AppScope.
+
+**Do not switch teams or ad accounts by replacing credentials while sharing the
+same data directory.** Saved private analytics, popularity and report caches
+remain accessible. An already-refreshing continuation is not bound to the account
+it verified and may use replacement credentials. The native setup window and
+Terminal configuration do not enforce this account boundary.
+
+For a different account, use a separately named MCP instance with distinct
+`APPSCOPE_CONFIG` **and** `APPSCOPE_DATA_DIR` paths. Keep each instance on its own
+account and ensure the agent uses the intended instance. Changing only the config
+path does not isolate the SQLite history. This arrangement has not been qualified
+with multiple live Apple accounts.
+
+Use key-rotation instructions only when the replacement credentials belong to
+the same team/ad account. Stop or cancel active work before changing configuration.
+
 ## Connect through your agent
 
 Ask your agent to connect the account needed for your report. AppScope opens a

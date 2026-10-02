@@ -8,6 +8,13 @@ The user accepts one invitation, signs into Apple in their browser, and adds a
 key in AppScope's private window. AppScope remembers the request, checks access,
 and continues it. Credentials never travel through a tool argument or result.
 
+**One account per provider is supported in each instance.** Account replacement
+does not isolate saved private data or safely switch an already-refreshing
+continuation. Setup does not enforce account isolation. Use separately named
+MCP instances with distinct config and data directories for different accounts;
+see [account limits](CREDENTIALS.md#one-account-per-provider). Multiple live-account
+isolation remains unqualified.
+
 ## User flow
 
 1. Ask for a report or keyword research. Public data works immediately.
