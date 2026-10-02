@@ -33,7 +33,10 @@ public enum ToolCatalog {
     localWrite: Bool = false, destructive: Bool = false, external: Bool = true
   ) -> Tool {
     Tool(
-      name: name, description: description,
+      name: name,
+      description: Onboarding.relevantTools.contains(name)
+        ? "\(description) In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI."
+        : description,
       inputSchema: [
         "type": "object",
         "properties": .object(
@@ -104,7 +107,7 @@ public enum ToolCatalog {
       required: ["provider", "decision"], localWrite: true, external: false),
     tool(
       "cancel_connection",
-      "Cancel a setup session. Retains any credentials already saved and any collected evidence; stops continuation.",
+      "Cancel a setup session and snooze this provider/app's invitations for seven days, preserving any existing active choice or decline. Retains saved credentials and evidence; stops continuation. Explicit user retry can reopen setup.",
       ["session_id": sessionID], required: ["session_id"], localWrite: true, external: false),
     tool(
       "check_connections",

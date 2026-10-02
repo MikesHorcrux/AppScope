@@ -107,7 +107,7 @@ private func startArgs(_ provider: String = "apple_ads") -> [String: JSON] {
     "connection_status", ["session_id": start["session_id"], "max_steps": 1])
   #expect(partial["state"].text == "refreshing")
   #expect(partial["result"]["run"]["run_id"] != old["run"]["run_id"])
-  #expect(partial["result"]["run"]["include_performance"].boolValue == false)
+  #expect(partial["result"]["run"]["include_performance"].boolValue == true)
   let transport2 = MockHTTP([
     (["access_token": "fixture-private-token-2", "expires_in": 3600], 200),
     (["result": [["text": "budget", "popularity": 40]]], 200),
@@ -118,7 +118,15 @@ private func startArgs(_ provider: String = "apple_ads") -> [String: JSON] {
   let done = try await restarted.call("connection_status", ["session_id": start["session_id"]])
   #expect(done["state"].text == "completed")
   #expect(done["result"]["run"]["run_id"] == partial["result"]["run"]["run_id"])
-  #expect(done["result"]["run"]["steps"].list.allSatisfy { $0["status"].text == "succeeded" })
+  #expect(
+    done["result"]["run"]["steps"].list.allSatisfy {
+      $0["status"].text == "succeeded"
+        || ($0["status"].text == "skipped" && $0["reason"].text == "provider_not_configured")
+    })
+  #expect(
+    done["result"]["run"]["steps"].list.contains {
+      $0["kind"].text == "performance" && $0["reason"].text == "provider_not_configured"
+    })
   #expect(
     try await restarted.call("connection_status", ["session_id": start["session_id"]]) == done)
   #expect(await transport2.requests.count == 2)
@@ -249,7 +257,9 @@ private func startArgs(_ provider: String = "apple_ads") -> [String: JSON] {
   await #expect(throws: ScopeError.self) {
     try await scope.privateSetupSession(start["session_id"].text)
   }
-  let next = try await scope.call("start_connection", startArgs())
+  var retry = startArgs()
+  retry["retry"] = true
+  let next = try await scope.call("start_connection", retry)
   let row = try await scope.database.get("connection_session", next["session_id"].text)!
   try await scope.database.put(
     "connection_session", next["session_id"].text,

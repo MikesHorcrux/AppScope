@@ -12,7 +12,9 @@ Run one job at a time.
 >    in this job, then retain unresolved errors. Do not loop until a provider recovers.
 >    If a run expired across UTC dates, start a new run; do not join two days silently.
 >    Continue with partial data when an account is missing. Never open a setup window
->    or repeatedly invite the user from a scheduled job. Honor saved declines.
+>    or repeatedly invite the user from a scheduled job. Honor saved declines
+>    and cancellation snoozes. Retain setup_needed as a nonblocking host action;
+>    do not execute setup or change the job to interactive.
 > 2. Inspect the returned report.health and every source's date/coverage. Completed
 >    collection does not imply complete provider data. Preserve skipped providers,
 >    failed steps and dated cached evidence. Use separately dated popularity_evidence

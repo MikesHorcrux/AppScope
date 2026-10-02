@@ -45,6 +45,8 @@ actor ProgressRecorder {
   let (tools, _) = try await client.listTools()
   #expect(tools.count == ToolCatalog.all.count)
   #expect(!tools.contains { $0.name == "enable_reports" })
+  let reportTool = try #require(tools.first { $0.name == "daily_report" })
+  #expect(reportTool.description?.contains("interaction: interactive") == true)
   let (content, failed) = try await client.callTool(name: "setup_status", arguments: [:])
   #expect(failed != true)
   if case .text(let text, _, _) = content[0] {
@@ -96,6 +98,19 @@ actor ProgressRecorder {
   }
   #expect(await recorder.values == [2, 3, 4])
   #expect(await recorder.tokens.allSatisfy { $0 == .string("refresh-test") })
+  let (background, backgroundFailed) = try await client.callTool(
+    name: "daily_report", arguments: ["app_id": "12"])
+  #expect(backgroundFailed != true)
+  if case .text(let text, _, _) = background[0] {
+    let result = try JSON.decode(Data(text.utf8))
+    #expect(result["onboarding"]["interaction"].text == "background")
+    #expect(
+      result["onboarding"]["providers"].list.allSatisfy {
+        $0["should_invite"].boolValue == false
+          && $0["next_action"]["kind"].text == "setup_needed"
+          && $0["next_action"]["tool"] == .null
+      })
+  }
   // Exercise the new contract over the actual MCP transport, with UI explicitly disabled.
   let (invitation, invitationFailed) = try await client.callTool(
     name: "daily_report",
@@ -116,6 +131,18 @@ actor ProgressRecorder {
     let (_, cancelFailed) = try await client.callTool(
       name: "cancel_connection", arguments: ["session_id": result["session_id"]])
     #expect(cancelFailed != true)
+    let (afterCancel, afterCancelFailed) = try await client.callTool(
+      name: "daily_report", arguments: ["app_id": "12", "interaction": "interactive"])
+    #expect(afterCancelFailed != true)
+    if case .text(let text, _, _) = afterCancel[0] {
+      let report = try JSON.decode(Data(text.utf8))
+      let ads = try #require(
+        report["onboarding"]["providers"].list.first {
+          $0["provider"].text == "apple_ads"
+        })
+      #expect(ads["should_invite"].boolValue == false)
+      #expect(ads["prompt_suppression"].text == "cancelled")
+    }
   }
   let (_, rejectedCredentials) = try await client.callTool(
     name: "start_connection",

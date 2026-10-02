@@ -179,7 +179,7 @@
       "openWorldHint" : false,
       "readOnlyHint" : false
     },
-    "description" : "Cancel a setup session. Retains any credentials already saved and any collected evidence; stops continuation.",
+    "description" : "Cancel a setup session and snooze this provider/app's invitations for seven days, preserving any existing active choice or decline. Retains saved credentials and evidence; stops continuation. Explicit user retry can reopen setup.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
@@ -204,7 +204,7 @@
       "openWorldHint" : true,
       "readOnlyHint" : false
     },
-    "description" : "Make bounded read-only live provider checks for this app. Unconfigured providers are skipped. Optionally check one provider. Saves sanitized capability evidence locally; never enables or imports reports or exposes credentials.",
+    "description" : "Make bounded read-only live provider checks for this app. Unconfigured providers are skipped. Optionally check one provider. Saves sanitized capability evidence locally; never enables or imports reports or exposes credentials. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
@@ -485,7 +485,7 @@
       "openWorldHint" : false,
       "readOnlyHint" : true
     },
-    "description" : "Check capabilities and whether Apple credentials are configured. Does not reveal credentials or make network calls.",
+    "description" : "Check capabilities and whether Apple credentials are configured. Does not reveal credentials or make network calls. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
@@ -547,7 +547,7 @@
       "openWorldHint" : true,
       "readOnlyHint" : false
     },
-    "description" : "List your apps through App Store Connect; requires credentials. Saves sanitized connection evidence locally.",
+    "description" : "List your apps through App Store Connect; requires credentials. Saves sanitized connection evidence locally. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
@@ -930,7 +930,7 @@
       "openWorldHint" : true,
       "readOnlyHint" : false
     },
-    "description" : "Get Apple Ads keyword suggestions and any official relative popularity. Missing scores stay null. Seeds are not guaranteed to be returned. Saves returned scores locally.",
+    "description" : "Get Apple Ads keyword suggestions and any official relative popularity. Missing scores stay null. Seeds are not guaranteed to be returned. Saves returned scores locally. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
@@ -990,7 +990,7 @@
       "openWorldHint" : true,
       "readOnlyHint" : false
     },
-    "description" : "Query top eligible Apple search terms by genre for complete Sunday–Saturday weeks. rankInGenre means term demand, not your app's rank. Requires Apple Ads credentials.",
+    "description" : "Query top eligible Apple search terms by genre for complete Sunday–Saturday weeks. rankInGenre means term demand, not your app's rank. Requires Apple Ads credentials. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
@@ -1064,7 +1064,7 @@
       "openWorldHint" : true,
       "readOnlyHint" : false
     },
-    "description" : "Sync standard Apple analytics reports and compare two periods. Defaults to 7 days ending 3 days ago. Missing/partial coverage is explicit. No conversion rate is fabricated from non-additive unique counts. Stores data locally.",
+    "description" : "Sync standard Apple analytics reports and compare two periods. Defaults to 7 days ending 3 days ago. Missing/partial coverage is explicit. No conversion rate is fabricated from non-additive unique counts. Stores data locally. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
@@ -1129,7 +1129,7 @@
       "openWorldHint" : false,
       "readOnlyHint" : true
     },
-    "description" : "Return a cached daily briefing for your agent to write: app context, keyword movement, top competitors, performance and experiments. Call app_profile, refresh_rankings (all batches), keyword_suggestions and app_performance first. No network calls; stale/missing data is explicit.",
+    "description" : "Return a cached daily briefing for your agent to write: app context, keyword movement, top competitors, performance and experiments. Call app_profile, refresh_rankings (all batches), keyword_suggestions and app_performance first. No network calls; stale/missing data is explicit. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
@@ -1171,7 +1171,7 @@
       "openWorldHint" : false,
       "readOnlyHint" : true
     },
-    "description" : "Return app/audience context, saved evidence and provisional ASO experiments with success measures. Uses cached data; collect fresh observations first. The agent reasons over the evidence; no LLM API key needed.",
+    "description" : "Return app/audience context, saved evidence and provisional ASO experiments with success measures. Uses cached data; collect fresh observations first. The agent reasons over the evidence; no LLM API key needed. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {
@@ -1213,7 +1213,7 @@
       "openWorldHint" : true,
       "readOnlyHint" : false
     },
-    "description" : "Collect app metadata, optional Apple popularity, all tracked ranks and optional performance, then return a briefing. Checkpoints survive interruption. Automatically resumes the latest unfinished run from today; run_id resumes a specific run. The keyword selection is frozen per run. No scheduler or Apple writes.",
+    "description" : "Collect app metadata, optional Apple popularity, all tracked ranks and optional performance, then return a briefing. Checkpoints survive interruption. Automatically resumes the latest unfinished run from today; run_id resumes a specific run. The keyword selection is frozen per run. No scheduler or Apple writes. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.",
     "inputSchema" : {
       "additionalProperties" : false,
       "properties" : {

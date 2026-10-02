@@ -109,7 +109,7 @@ Local writes: **yes**. Network access: **none**.
 
 ## `cancel_connection`
 
-Cancel a setup session. Retains any credentials already saved and any collected evidence; stops continuation.
+Cancel a setup session and snooze this provider/app's invitations for seven days, preserving any existing active choice or decline. Retains saved credentials and evidence; stops continuation. Explicit user retry can reopen setup.
 
 Local writes: **yes**. Network access: **none**.
 
@@ -128,7 +128,7 @@ Local writes: **yes**. Network access: **none**.
 
 ## `check_connections`
 
-Make bounded read-only live provider checks for this app. Unconfigured providers are skipped. Optionally check one provider. Saves sanitized capability evidence locally; never enables or imports reports or exposes credentials.
+Make bounded read-only live provider checks for this app. Unconfigured providers are skipped. Optionally check one provider. Saves sanitized capability evidence locally; never enables or imports reports or exposes credentials. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.
 
 Local writes: **yes**. Network access: **possible**.
 
@@ -264,7 +264,7 @@ Local writes: **no**. Network access: **none**.
 
 ## `setup_status`
 
-Check capabilities and whether Apple credentials are configured. Does not reveal credentials or make network calls.
+Check capabilities and whether Apple credentials are configured. Does not reveal credentials or make network calls. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.
 
 Local writes: **no**. Network access: **none**.
 
@@ -302,7 +302,7 @@ No arguments.
 
 ## `owned_apps`
 
-List your apps through App Store Connect; requires credentials. Saves sanitized connection evidence locally.
+List your apps through App Store Connect; requires credentials. Saves sanitized connection evidence locally. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.
 
 Local writes: **yes**. Network access: **possible**.
 
@@ -522,7 +522,7 @@ Local writes: **no**. Network access: **none**.
 
 ## `keyword_suggestions`
 
-Get Apple Ads keyword suggestions and any official relative popularity. Missing scores stay null. Seeds are not guaranteed to be returned. Saves returned scores locally.
+Get Apple Ads keyword suggestions and any official relative popularity. Missing scores stay null. Seeds are not guaranteed to be returned. Saves returned scores locally. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.
 
 Local writes: **yes**. Network access: **possible**.
 
@@ -550,7 +550,7 @@ Local writes: **yes**. Network access: **possible**.
 
 ## `search_term_popularity`
 
-Query top eligible Apple search terms by genre for complete Sunday–Saturday weeks. rankInGenre means term demand, not your app's rank. Requires Apple Ads credentials.
+Query top eligible Apple search terms by genre for complete Sunday–Saturday weeks. rankInGenre means term demand, not your app's rank. Requires Apple Ads credentials. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.
 
 Local writes: **yes**. Network access: **possible**.
 
@@ -582,7 +582,7 @@ Local writes: **yes**. Network access: **possible**.
 
 ## `app_performance`
 
-Sync standard Apple analytics reports and compare two periods. Defaults to 7 days ending 3 days ago. Missing/partial coverage is explicit. No conversion rate is fabricated from non-additive unique counts. Stores data locally.
+Sync standard Apple analytics reports and compare two periods. Defaults to 7 days ending 3 days ago. Missing/partial coverage is explicit. No conversion rate is fabricated from non-additive unique counts. Stores data locally. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.
 
 Local writes: **yes**. Network access: **possible**.
 
@@ -609,7 +609,7 @@ Local writes: **yes**. Network access: **possible**.
 
 ## `daily_report`
 
-Return a cached daily briefing for your agent to write: app context, keyword movement, top competitors, performance and experiments. Call app_profile, refresh_rankings (all batches), keyword_suggestions and app_performance first. No network calls; stale/missing data is explicit.
+Return a cached daily briefing for your agent to write: app context, keyword movement, top competitors, performance and experiments. Call app_profile, refresh_rankings (all batches), keyword_suggestions and app_performance first. No network calls; stale/missing data is explicit. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.
 
 Local writes: **no**. Network access: **none**.
 
@@ -631,7 +631,7 @@ Local writes: **no**. Network access: **none**.
 
 ## `aso_strategy`
 
-Return app/audience context, saved evidence and provisional ASO experiments with success measures. Uses cached data; collect fresh observations first. The agent reasons over the evidence; no LLM API key needed.
+Return app/audience context, saved evidence and provisional ASO experiments with success measures. Uses cached data; collect fresh observations first. The agent reasons over the evidence; no LLM API key needed. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.
 
 Local writes: **no**. Network access: **none**.
 
@@ -653,7 +653,7 @@ Local writes: **no**. Network access: **none**.
 
 ## `refresh_app`
 
-Collect app metadata, optional Apple popularity, all tracked ranks and optional performance, then return a briefing. Checkpoints survive interruption. Automatically resumes the latest unfinished run from today; run_id resumes a specific run. The keyword selection is frozen per run. No scheduler or Apple writes.
+Collect app metadata, optional Apple popularity, all tracked ranks and optional performance, then return a briefing. Checkpoints survive interruption. Automatically resumes the latest unfinished run from today; run_id resumes a specific run. The keyword selection is frozen per run. No scheduler or Apple writes. In a live user conversation, pass interaction: interactive and read onboarding to offer optional Apple API credential setup when should_invite is true. Background jobs return nonblocking setup_needed guidance without prompting or opening UI.
 
 Local writes: **yes**. Network access: **possible**.
 

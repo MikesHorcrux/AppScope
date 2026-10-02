@@ -6,6 +6,12 @@ check release notes before updating and back up private local data.
 
 ## Unreleased
 
+- Missing credentials now return nonblocking `setup_needed` guidance to background
+  callers. Tool discovery explains how live conversations opt into invitations.
+- Cancelling private setup snoozes invitations for seven days without shortening
+  a saved decline. Explicit retry can reopen setup; account and app choices persist.
+- Resumed daily reports and strategies collect both requested providers. Explicit
+  refresh exclusions and frozen keyword selections survive setup and restart.
 - Added agent-led Apple account setup: a private native form, key import, ID
   autofill, saved decisions and automatic continuation of the original request.
 - Added `start_connection`, `connection_status`, `connection_decision` and

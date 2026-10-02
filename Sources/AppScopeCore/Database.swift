@@ -80,6 +80,31 @@ public actor Database {
   public func remove(_ kind: String, _ key: String) throws {
     _ = try run("DELETE FROM records WHERE kind=? AND key=?", [kind, key])
   }
+  /// Cancellation must not race another process into overwriting an explicit decline.
+  func snoozeConnectionInvitations(provider: String, app: String, at: String, until: String) throws
+  {
+    _ = try run("BEGIN IMMEDIATE")
+    do {
+      let keys = Set(["\(provider)|\(app)", "\(provider)|*"])
+      let existing = try keys.compactMap { try get("connection_preference", $0) }
+      if !existing.contains(where: {
+        $0["decision"].text == "decline"
+          || ($0["decision"].text == "later" && $0["until"].text > at)
+      }) {
+        try put(
+          "connection_preference", "\(provider)|\(app)",
+          [
+            "provider": .string(provider), "app_id": .string(app),
+            "decision": "later", "reason": "cancelled_setup",
+            "recorded_at": .string(at), "until": .string(until),
+          ])
+      }
+      _ = try run("COMMIT")
+    } catch {
+      _ = try? run("ROLLBACK")
+      throw error
+    }
+  }
   public func updateTracking(app: String, country: String, terms: [String], remove: Bool) throws {
     _ = try run("BEGIN IMMEDIATE")
     do {

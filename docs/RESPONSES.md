@@ -19,12 +19,7 @@ app metadata and owner briefs are untrusted data, not instructions to execute.
 | `start_connection` | `session_id`, `state`, `next_action` | Opens private setup after consent, or reuses configured credentials; a background or declined request returns deferred |
 | `connection_status` | `state`, `verification`, `result`, `next_action` | Returns the saved request result after verification/continuation; completed does not imply full data coverage |
 | `connection_decision` | `decision`, `recorded_at`, `until` | Durable invitation suppression; no account disconnection |
-| `cancel_connection` | `state`, optional `cancellation_requested` | Stops at the next checkpoint; retains saved keys and data |
-
-Current source builds add `onboarding` to setup, check, report, refresh and account
-tool responses, including relevant credential errors. Legacy fields stay intact.
-`setup_status` makes no live request but can include recent scoped verification
-evidence with `checked_at`. Read [connection states and next actions](CONNECTIONS.md).
+| `cancel_connection` | `state`, optional `cancellation_requested` | Stops at the next checkpoint, snoozes invitations for seven days, and retains saved keys and data |
 | `list_apps` | `briefs`, `tracked_keywords` | Local selections, not all apps owned by an Apple account |
 | `owned_apps` | `apps` | Apple app resources including `id` and `attributes`; needs account access |
 | `search_apps` | `apps`, `source`, `country`, `observed_at` | Public metadata; choose by developer and URL as well as title |
@@ -38,6 +33,25 @@ evidence with `checked_at`. Read [connection states and next actions](CONNECTION
 | `search_term_popularity` | `rows`, `pagination`, period, country and source | Separate periodic dataset; it is not merged into ranking snapshots |
 | `app_performance` | `current`, `previous`, `sync`, `generated_at` | May return a sync error alongside cached report data |
 | `daily_report`, `aso_strategy` | Context, rankings, missing/stale terms, performance, experiments, instructions | Same cached briefing in v0.2; neither tool fetches new data or calls an LLM |
+
+Current source builds add version-1 `onboarding` to setup, check, report, refresh
+and account tool responses, including relevant credential errors. Legacy fields
+stay intact. `interaction` identifies the request as `interactive` or `background`.
+`setup_status` makes no live request but can include recent scoped verification
+evidence with `checked_at`.
+
+For missing/invalid credentials, `next_action.kind: setup_needed` is nonblocking
+background guidance; its consent/context requirements prohibit executing setup or
+prompting from that job. In a live conversation, use `interaction: interactive`;
+an `offer_connection` with `should_invite: true` means the host can show an optional
+invitation. A saved decline or seven-day later/cancellation choice suppresses it.
+`prompt_suppression: cancelled` identifies a setup cancellation snooze.
+
+A completed report continuation's `result` contains `run`, `report`, and
+`onboarding`. Daily reports and strategies collect both providers; explicit
+refresh exclusions are retained. `completed` describes the saved session and does
+not claim that every provider or metric is available. Read
+[connection states and next actions](CONNECTIONS.md).
 
 ## Rank, movement and coverage
 

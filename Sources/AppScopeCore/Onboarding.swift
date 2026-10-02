@@ -106,7 +106,9 @@ extension AppScope {
     return saved
   }
   func connectionPreference(provider: String, app: String) async throws -> JSON? {
-    if let scoped = try await database.get("connection_preference", "\(provider)|\(app)") {
+    if let scoped = try await database.get("connection_preference", "\(provider)|\(app)"),
+      scoped["decision"].text == "decline" || scoped["until"].text > timestamp()
+    {
       return scoped
     }
     return try await database.get("connection_preference", "\(provider)|*")
@@ -158,6 +160,17 @@ extension AppScope {
         if app != "*" { arguments["app_id"] = .string(app) }
         action = [
           "kind": "offer_connection", "tool": "start_connection", "arguments": .object(arguments),
+          "requires_user_consent": true,
+        ]
+      } else if needsSetup && !declined && !deferred {
+        action = [
+          "kind": .string(interactive ? "select_app_first" : "setup_needed"),
+          "requires_user_consent": true, "requires_interactive_context": true,
+          "message": .string(
+            interactive
+              ? "Choose the app or supported account-data request before offering scoped setup."
+              : "Continue with available data. In a live user conversation, repeat the original request with interaction: interactive to offer optional private Apple API credential setup. Do not prompt or open setup from this background job."
+          ),
         ]
       } else if state == "configured_unverified", app != "*" {
         action = [
@@ -206,7 +219,10 @@ extension AppScope {
           !interactive
             ? "background"
             : declined
-              ? "declined" : deferred ? "deferred" : !canScope ? "select_app_first" : "none"),
+              ? "declined"
+              : deferred
+                ? decision?["reason"].text == "cancelled_setup" ? "cancelled" : "deferred"
+                : !canScope ? "select_app_first" : "none"),
         "benefit": .string(
           provider == "apple_ads"
             ? "Add official keyword popularity to your research."
@@ -215,9 +231,10 @@ extension AppScope {
       ])
     }
     return [
-      "version": 1, "providers": .array(items),
+      "version": 1, "interaction": .string(interactive ? "interactive" : "background"),
+      "providers": .array(items),
       "host_instructions":
-        "Present one short invitation only when should_invite is true, and record the user's later/decline choice with connection_decision. With consent, call start_connection, then connection_status with wait_seconds 20 while the user uses the private window; retrieve the result when completed. AppScope's running server automatically verifies and continues after saving. Stop on needs_attention, cancelled or expired. If the window is unavailable, explain the local fallback. Never request keys, tokens, passwords, or Apple sign-in codes in chat. Background jobs continue with partial data without opening setup. Do not infer that an invitation was displayed from this JSON.",
+        "In an ordinary live user conversation, pass interaction: interactive on the original tool request. Background jobs keep setup_needed as nonblocking guidance; never prompt, open setup, or silently reclassify a scheduled request. Present one short invitation only when should_invite is true, and record the user's later/decline choice with connection_decision. Explain that setup uses Apple API credentials, not Sign in with Apple or an OAuth redirect. With consent, call start_connection, then connection_status with wait_seconds 20 while the user uses the private window; retrieve the result when completed. AppScope's running server automatically verifies and continues after saving. Cancellation snoozes invitations for seven days; an explicit user request to connect can override a saved choice with retry: true. Stop on needs_attention, cancelled or expired. If the window is unavailable, explain the local fallback. Never request keys, tokens, passwords, or Apple sign-in codes in chat. Do not infer that an invitation was displayed from this JSON.",
     ]
   }
 }

@@ -74,7 +74,7 @@ extension AppScope {
             : state == "completed"
               ? "The request finished. Report the returned coverage and any remaining gaps."
               : state == "cancelled"
-                ? "Setup stopped. Any saved credentials and collected data are retained."
+                ? "Setup stopped. Invitations are snoozed for seven days unless a saved user choice already applies. Saved credentials and collected data are retained. Connect again only on explicit user retry."
                 : state == "expired"
                   ? "Setup expired after 24 hours. Start again when ready."
                   : "Review the reported issue; retry after addressing it.")
@@ -351,17 +351,21 @@ extension AppScope {
       args["new_run"] = true
       args["max_steps"] = .int(min(maxSteps, args["max_steps"]?.intValue ?? maxSteps))
       if tool != "refresh_app" {
-        args["include_popularity"] = .bool(session["provider"].text == "apple_ads")
-        args["include_performance"] = .bool(session["provider"].text == "app_store_connect")
+        // Daily reports and strategies request both sources, not just the newly connected one.
+        // refresh_app already carries the original frozen flags, including exclusions.
+        args["include_popularity"] = true
+        args["include_performance"] = true
       }
       let result = try await refreshApp(
         app: app, country: country, args: .object(args), progress: progress,
         preparedRunID: session["continuation_run_id"].text,
         preparedKeywords: session["continuation_keywords"].list.map(\.text))
+      var onboardingArgs = args
+      onboardingArgs["app_id"] = .string(app)
+      onboardingArgs["country"] = .string(country)
+      onboardingArgs["interaction"] = "interactive"
       return result.setting([
-        "onboarding": try await onboarding(
-          name: tool,
-          args: ["app_id": .string(app), "country": .string(country), "interaction": "interactive"])
+        "onboarding": try await onboarding(name: tool, args: onboardingArgs)
       ])
     }
     return try await call(tool, args, progress: progress)
@@ -390,6 +394,9 @@ extension AppScope {
     }
     try await database.put(
       "connection_cancel", session["session_id"].text, ["requested_at": .string(timestamp())])
+    try await database.snoozeConnectionInvitations(
+      provider: session["provider"].text, app: session["app_id"].text,
+      at: timestamp(), until: timestamp(Date().addingTimeInterval(7 * 86400)))
     return try await advanceConnection(["session_id": session["session_id"]], progress: nil)
   }
 

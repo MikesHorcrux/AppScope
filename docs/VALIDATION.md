@@ -1,5 +1,47 @@
 # Local validation
 
+## Onboarding contract follow-up — 2026-10-02
+
+Prepared on `codex/onboarding-qualification` in an isolated copy of
+`codex/apple-account-onboarding` at `781290a`, using Swift 6.4 and the Xcode macOS
+27 SDK on Apple Silicon. This remains an unreleased source change.
+
+- New regressions first reproduced missing background setup actions, cancellation
+  re-invitations, and collection dropping the already connected provider.
+- The complete `swift test` suite passed: **54 tests**, including the real stdio
+  MCP subprocess. New cases cover nonblocking background actions, cancellation
+  snoozes across restart/countries, explicit retry, permanent declines,
+  app/account preference precedence, both mixed-provider report directions,
+  original refresh exclusions and frozen keywords across restart, HTTP 401/403/500
+  verification failures, and continuation stopping before collection on failure.
+  Existing partial-access, report-readiness, secret-boundary, concurrent worker,
+  cancellation and private-import regressions remain passing.
+- Generated documentation passed for all **28 tool schemas and examples**, fenced
+  JSON and relative links. Changed Swift files passed strict format lint; the
+  patch passed `git diff --check`. The built CLI help ran successfully.
+- A deterministic fixture host made **11 bounded requests** to the actual MCP
+  subprocess using protocol `2025-11-25`. Tool discovery advertised interactive
+  setup. A cached report retained one fictional public ranking; background setup
+  actions did not invite. Interactive requests exposed both invitations;
+  cancellation, decline and explicit retry produced their expected states.
+  Native setup UI was disabled, account configuration remained empty, and no
+  provider verification or credential entry was performed in this walkthrough.
+
+SwiftPM's default build engine could not sign its generated test bundle because
+of Finder metadata. The supported native build engine completed the build/tests.
+The execution environment also required approved execution for SwiftPM's nested
+manifest sandbox. Build concurrency was limited to two jobs, dependency versions
+stayed pinned, and dependency updates/credential stores were disabled.
+
+The deterministic host walkthrough proves the stdio contract and a scripted
+invitation renderer. It does **not** prove that a registered agent host naturally
+presents the invitation or delivers a live completed report. No AppScope tools
+were exposed to the implementation task's host. Real Apple authentication,
+account roles, report availability, native packaged/Gatekeeper behavior, and
+Intel/macOS 14 runtime qualification remain outstanding. No real account was
+connected and no reports, listings or campaigns were changed. Keep the Relic
+ticket In Progress until the required live host/account acceptance is evidenced.
+
 ## Private Apple connections — 2026-09-29
 
 Branch: `codex/apple-account-onboarding`. Unreleased source build on Apple Silicon
