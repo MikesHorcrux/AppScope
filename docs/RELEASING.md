@@ -37,8 +37,10 @@ git diff --check
 Adjust `DEVELOPER_DIR` if Xcode is installed elsewhere. The package script also
 runs the documentation check. Every archive includes `VERSION` and `BUILD.json` (source revision and whether
 uncommitted changes were present). Build from the intended clean commit. Staging
-is temporary and recreated for each build. It builds both `arm64` and `x86_64`, creates a
-single executable, includes the handbook/examples/licenses and produces:
+is temporary and recreated for each build. It builds `arm64` and `x86_64`
+separately through native SwiftPM with two jobs, then combines them with `lipo`.
+This avoids the combined-build manifest failure on Swift 6.1. The archive omits
+Finder metadata, includes the handbook/examples/licenses and produces:
 
 ```text
 dist/appscope-0.0.3-alpha-macos-universal.tar.gz

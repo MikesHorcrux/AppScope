@@ -11,15 +11,20 @@ if [[ -d /Applications/Xcode.app/Contents/Developer && -z "${DEVELOPER_DIR:-}" ]
   export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 fi
 swift run appscope-docs --check
-swift build -c release --arch arm64 --arch x86_64 --product appscope
-binary_dir="$(swift build -c release --arch arm64 --arch x86_64 --show-bin-path)"
-version="$("$binary_dir/appscope" --version)"
+# Swift 6.1's Xcode multi-architecture path can report dependency manifest errors
+# even when compilation succeeds. Build each native slice and combine explicitly.
+swift build --build-system native -c release --arch arm64 --product appscope --jobs 2
+arm64_dir="$(swift build --build-system native -c release --arch arm64 --show-bin-path)"
+swift build --build-system native -c release --arch x86_64 --product appscope --jobs 2
+x86_64_dir="$(swift build --build-system native -c release --arch x86_64 --show-bin-path)"
 mkdir -p "$repo_root/dist"
 staging_parent="$(mktemp -d "$repo_root/dist/.stage.XXXXXX")"
 trap 'rm -rf "$staging_parent"' EXIT
+lipo -create "$arm64_dir/appscope" "$x86_64_dir/appscope" -output "$staging_parent/appscope"
+version="$("$staging_parent/appscope" --version)"
 staging="$staging_parent/appscope-$version-macos-universal"
 mkdir -p "$staging/licenses"
-install -m 755 "$binary_dir/appscope" "$staging/appscope"
+install -m 755 "$staging_parent/appscope" "$staging/appscope"
 cp LICENSE README.md SECURITY.md CONTRIBUTING.md CHANGELOG.md "$staging/"
 cp -R docs examples assets "$staging/"
 cp scripts/install-binary.sh "$staging/install.sh"
@@ -48,6 +53,6 @@ if [[ -n "${APPSCOPE_NOTARY_PROFILE:-}" ]]; then
   "$repo_root/scripts/check-notary-result.sh" "$staging_parent/notary-result.json"
   # A bare command-line executable cannot be stapled; Gatekeeper checks the online ticket.
 fi
-tar -czf "$archive" -C "$staging_parent" "$(basename "$staging")"
+COPYFILE_DISABLE=1 tar -czf "$archive" -C "$staging_parent" "$(basename "$staging")"
 (cd "$repo_root/dist" && shasum -a 256 "$(basename "$archive")" > "$(basename "$archive").sha256")
 printf 'Archive: %s\n' "$archive"

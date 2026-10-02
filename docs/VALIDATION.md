@@ -10,7 +10,9 @@ format lint passed for all 15 Swift files changed since `v0.0.2-alpha`.
 
 The versioned tool reference, all **28 schemas and synthetic examples**, fenced
 JSON and relative links passed the documentation check. Release preparation
-preserves the pinned dependencies and existing CI/package scripts. Packaging,
+preserves the pinned dependencies and existing CI workflows. Packaging now builds
+native architecture slices separately and combines them with `lipo`, avoiding the
+Swift 6.1 combined-build manifest failure observed in CI. Packaging,
 CI results and uploaded asset verification are separate checks recorded with
 the GitHub release; these source tests do not establish their success.
 

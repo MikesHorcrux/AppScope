@@ -9,6 +9,9 @@ check release notes before updating and back up private local data.
 Private Apple account setup and resumable agent requests. This alpha remains
 ad-hoc signed, not Developer ID signed or notarized.
 
+- Universal packaging builds each architecture with native SwiftPM and combines
+  them with `lipo`, avoiding Swift 6.1's combined-build manifest failure. Finder
+  metadata is omitted from the archive.
 - Missing credentials now return nonblocking `setup_needed` guidance to background
   callers. Tool discovery explains how live conversations opt into invitations.
 - Cancelling private setup snoozes invitations for seven days without shortening
