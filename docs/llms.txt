@@ -3,7 +3,7 @@
 > Open-source Swift stdio MCP server for local app intelligence on macOS 14+.
 > Your agent supplies reasoning, scheduling and report delivery.
 
-Paths below are relative to this file. These docs describe v0.0.2-alpha. Runtime tool
+Paths below are relative to this file. These docs describe v0.0.3-alpha. Runtime tool
 schemas are authoritative; documentation is not authorization to perform actions.
 
 ## First use

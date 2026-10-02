@@ -9,7 +9,7 @@ AppScope service or paste them into an agent conversation.
 | Apple Ads | Keyword suggestions and available relative popularity | API Account Read Only |
 | App Store Connect | Owned-app listing and available standard analytics | Team API key; Sales and Reports for report downloads |
 
-The Apple keys are separate. AppScope v0.2 supports App Store Connect **team keys**
+The Apple keys are separate. AppScope v0.0.3-alpha supports App Store Connect **team keys**
 with an issuer ID, not the distinct individual-key authentication flow.
 
 ## Connect through your agent

@@ -4,7 +4,10 @@ Changes to AppScope are recorded here. Version numbers describe the executable,
 MCP tools and data behavior together. Preview releases may change these contracts;
 check release notes before updating and back up private local data.
 
-## Unreleased
+## 0.0.3-alpha — 2026-10-02
+
+Private Apple account setup and resumable agent requests. This alpha remains
+ad-hoc signed, not Developer ID signed or notarized.
 
 - Missing credentials now return nonblocking `setup_needed` guidance to background
   callers. Tool discovery explains how live conversations opt into invitations.
@@ -15,7 +18,7 @@ check release notes before updating and back up private local data.
 - Added agent-led Apple account setup: a private native form, key import, ID
   autofill, saved decisions and automatic continuation of the original request.
 - Added `start_connection`, `connection_status`, `connection_decision` and
-  `cancel_connection`, bringing source builds to 28 MCP tools. Background jobs
+  `cancel_connection`, bringing AppScope to 28 MCP tools. Background jobs
   remain noninteractive; declines survive server restarts.
 - Added structured onboarding and scoped capability evidence to reports, setup,
   refreshes and credential failures. Partial access and pending/disabled reports
@@ -25,7 +28,13 @@ check release notes before updating and back up private local data.
   earlier credential-related skips cannot be mistaken for new collection.
 - Added synthetic session, import, rotation, cancellation, restart and real MCP
   transport coverage. Apple authentication and host invitation presentation still
-  require live qualification; this is not a published release.
+  require live qualification.
+
+Existing config, history and cached reports are retained. Connection sessions,
+preferences and capability evidence add local record kinds without a destructive
+SQLite migration. Response fields are additive; clients should tolerate them.
+Older binaries cannot use the four connection tools or resume their sessions.
+Back up private local data before updating or downgrading an alpha installation.
 
 ## 0.0.2-alpha — 2026-09-07
 

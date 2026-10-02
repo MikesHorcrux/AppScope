@@ -29,10 +29,12 @@ reasoning, scheduling, and the place where you read the report.
 
 ## Current release status
 
-AppScope [0.0.2-alpha](https://github.com/LunarMothStudios/AppScope/releases/tag/v0.0.2-alpha)
-is the first public alpha, including a universal Mac archive. It is ad-hoc signed,
-not notarized. Homebrew remains pending. Public app search and MCP have been
-exercised live; account adapters await authenticated qualification.
+These docs describe v0.0.3-alpha, including private Apple connection sessions and
+28 MCP tools. Compiled downloads are listed on
+[GitHub releases](https://github.com/MikesHorcrux/AppScope/releases). Alpha archives
+are ad-hoc signed, not notarized. Homebrew remains pending. Public app search and
+MCP have been exercised live; Apple account access and the complete host-led
+connection workflow await live qualification.
 
 The [tool catalog](../examples/tool-catalog.json) and
 [example calls](../examples/tool-calls.json) are machine-readable. The

@@ -1,10 +1,31 @@
 # Local validation
 
+## Release preparation — 2026-10-02
+
+Version `0.0.3-alpha` includes the private connection work and onboarding contract
+fixes below. Its release source passed the complete **54-test** suite, including
+the official SDK's real stdio MCP subprocess, on Apple Silicon with Swift 6.4
+and the Xcode macOS 27 SDK using the supported native build engine. Strict Swift
+format lint passed for all 15 Swift files changed since `v0.0.2-alpha`.
+
+The versioned tool reference, all **28 schemas and synthetic examples**, fenced
+JSON and relative links passed the documentation check. Release preparation
+preserves the pinned dependencies and existing CI/package scripts. Packaging,
+CI results and uploaded asset verification are separate checks recorded with
+the GitHub release; these source tests do not establish their success.
+
+This remains an alpha. No real Apple credentials, account roles or report
+availability were qualified. The complete registered-host invitation and resumed
+report workflow, Intel runtime, a clean macOS 14 installation and ordinary
+quarantined-download/Gatekeeper behavior remain unverified. Ad-hoc signing does
+not establish Developer ID signing or notarization. The Relic ticket's live
+acceptance work remains In Progress.
+
 ## Onboarding contract follow-up — 2026-10-02
 
 Prepared on `codex/onboarding-qualification` in an isolated copy of
 `codex/apple-account-onboarding` at `781290a`, using Swift 6.4 and the Xcode macOS
-27 SDK on Apple Silicon. This remains an unreleased source change.
+27 SDK on Apple Silicon. These checks preceded release preparation.
 
 - New regressions first reproduced missing background setup actions, cancellation
   re-invitations, and collection dropping the already connected provider.

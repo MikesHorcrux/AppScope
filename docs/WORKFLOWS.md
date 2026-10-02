@@ -53,7 +53,7 @@ check them; it must not present those candidates as a known competitor keyword l
 ## Choose a measurable ASO experiment
 
 Use `aso_strategy` or `daily_report` after collecting data. They return the same
-cached briefing in v0.2. The agent can refine its provisional suggestions.
+cached briefing in v0.0.3-alpha. The agent can refine its provisional suggestions.
 
 A useful experiment includes the affected app/country, target term or audience,
 current evidence and dates, a proposed change, the expected mechanism, a baseline,
@@ -108,7 +108,7 @@ on every unchanged run.
 Repeat the workflow for each verified app ID and country. Briefs are app-wide;
 keyword tracking, ranking snapshots and cached performance are country-specific.
 The default is `us`, not the computer's region. There is no `country: all` option
-in the v0.2 MCP tools. Run separate country calls and keep their evidence separate.
+in the v0.0.3-alpha MCP tools. Run separate country calls and keep their evidence separate.
 
 Prefer one active server and one job at a time. SQLite supports multiple local
 processes, but request pacing and Apple Ads token caching are per process.

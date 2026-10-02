@@ -48,7 +48,7 @@ reverse index of the App Store.
 
 The executable runs on macOS. The current public search adapter uses Apple's
 `software` entity for the mobile app catalog; there is no separate
-`macSoftware` search mode or device selector in v0.2. Do not claim Mac App Store
+`macSoftware` search mode or device selector in v0.0.3-alpha. Do not claim Mac App Store
 rank coverage from these results. Account analytics depend on the app and reports
 available through your App Store Connect access.
 
@@ -78,7 +78,7 @@ request using an Admin key; it does not change a listing.
 The host schedules `refresh_app`, checks its saved run and report health, writes
 the narrative and stores/delivers it. It can resume an interrupted run on the same
 UTC date. `daily_report` and `aso_strategy` are the same cached
-briefing in v0.2 and do not refresh data themselves. Use the [daily job template](../examples/hex-daily-job.md).
+briefing in v0.0.3-alpha and do not refresh data themselves. Use the [daily job template](../examples/hex-daily-job.md).
 
 ## What can AppScope tell me about audiences?
 
@@ -88,7 +88,7 @@ does not infer actual user demographics from ratings, keywords or app descriptio
 
 ## Can it give me conversion rate, retention, or keyword-level revenue?
 
-Apple's conversion rate is always unavailable in v0.2 because unique counts are
+Apple's conversion rate is always unavailable in v0.0.3-alpha because unique counts are
 not safely additive in the imported rows. Retention, subscriptions, cohorts and
 keyword-attributed revenue are not implemented. Supported performance fields and
 coverage rules are in the [response guide](RESPONSES.md).
@@ -101,9 +101,10 @@ its original dates; a newly generated briefing is not proof of newly fetched dat
 
 ## Can I install it with Homebrew today?
 
-The repository has packaging and formula-generation scripts, but a public release
-and tap still need publication. Until a real download/tap URL is published, use
-the source installer. See the [release guide](RELEASING.md) for maintainer steps.
+Homebrew is not published yet. Use a compiled alpha from
+[GitHub releases](https://github.com/MikesHorcrux/AppScope/releases) or the source
+installer. The repository has packaging and formula-generation scripts; see the
+[release guide](RELEASING.md) for maintainer steps.
 
 ## Can it remember what I changed and whether it helped?
 

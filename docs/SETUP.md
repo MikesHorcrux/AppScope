@@ -8,14 +8,14 @@ For your first app and report, follow [getting started](GETTING-STARTED.md).
 
 ## Install from source
 
-The [official GitHub repository](https://github.com/LunarMothStudios/AppScope)
+The [official GitHub repository](https://github.com/MikesHorcrux/AppScope)
 is available now. Open Terminal and run the commands below to download and
 install it. Building requires Swift 6+ and a macOS SDK. The installer selects
 full Xcode at `/Applications/Xcode.app/Contents/Developer` when available; otherwise
 use matching Command Line Tools. Dependency resolution needs network access.
 
 ```sh
-git clone https://github.com/LunarMothStudios/AppScope.git
+git clone https://github.com/MikesHorcrux/AppScope.git
 cd AppScope
 ./scripts/install.sh
 "$HOME/.local/bin/appscope" setup
@@ -42,15 +42,17 @@ data directory. Use a writable prefix without `sudo`.
 ## Install a compiled release
 
 Download the `.tar.gz` archive and `.sha256` file from the official
-[v0.0.2-alpha release](https://github.com/LunarMothStudios/AppScope/releases/tag/v0.0.2-alpha).
+[GitHub releases](https://github.com/MikesHorcrux/AppScope/releases).
 This alpha is ad-hoc signed, not Developer ID signed or notarized; macOS may block
 the downloaded executable. Do not disable Gatekeeper. Source installation above
-is an alternative. In Terminal, enter the folder containing the downloads, then run:
+is an alternative. In Terminal, enter the folder containing the downloads. For
+the v0.0.3-alpha archive, run the following; use the matching versioned filenames
+if you downloaded an older alpha:
 
 ```sh
-shasum -a 256 -c appscope-0.0.2-alpha-macos-universal.tar.gz.sha256
-tar -xzf appscope-0.0.2-alpha-macos-universal.tar.gz
-cd appscope-0.0.2-alpha-macos-universal
+shasum -a 256 -c appscope-0.0.3-alpha-macos-universal.tar.gz.sha256
+tar -xzf appscope-0.0.3-alpha-macos-universal.tar.gz
+cd appscope-0.0.3-alpha-macos-universal
 ./install.sh
 "$HOME/.local/bin/appscope" setup
 "$HOME/.local/bin/appscope" doctor
@@ -89,8 +91,8 @@ Some hosts use a settings form or another file format: the executable and `serve
 argument are the same. Consult that host's current MCP instructions for where to
 put them. Never add credentials or private-key contents to the connection JSON.
 
-Restart the connection and call `setup_status`. Current source builds expose 28
-tools; the published v0.0.2-alpha archive has 24.
+Restart the connection and call `setup_status`. Version 0.0.3-alpha exposes 28
+tools; the older v0.0.2-alpha archive has 24.
 `configured_unverified` means required credential strings are present, not that
 Apple access was checked. Start with `search_apps` for a public live check.
 

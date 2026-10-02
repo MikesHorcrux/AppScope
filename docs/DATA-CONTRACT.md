@@ -62,7 +62,7 @@ First-time downloads and redownloads are separate; updates/restores are excluded
 Impression events exclude page views. Product page view events are limited to the
 product-page type. Sales and proceeds use the report's USD fields, including
 negative refund adjustments. Paying users and unique counts are not summed across
-rows. Therefore **Apple's conversion rate is unavailable in v0.2**, rather than
+rows. Therefore **Apple's conversion rate is unavailable in v0.0.3-alpha**, rather than
 computed incorrectly from non-additive counts. Agents must not present
 product-page views divided by impressions as Apple's conversion rate.
 

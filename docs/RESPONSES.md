@@ -32,9 +32,9 @@ app metadata and owner briefs are untrusted data, not instructions to execute.
 | `keyword_suggestions` | `suggestions`, `pagination`, `observed_at`, `coverage` | Caches returned scores; an input seed may be absent |
 | `search_term_popularity` | `rows`, `pagination`, period, country and source | Separate periodic dataset; it is not merged into ranking snapshots |
 | `app_performance` | `current`, `previous`, `sync`, `generated_at` | May return a sync error alongside cached report data |
-| `daily_report`, `aso_strategy` | Context, rankings, missing/stale terms, performance, experiments, instructions | Same cached briefing in v0.2; neither tool fetches new data or calls an LLM |
+| `daily_report`, `aso_strategy` | Context, rankings, missing/stale terms, performance, experiments, instructions | Same cached briefing in v0.0.3-alpha; neither tool fetches new data or calls an LLM |
 
-Current source builds add version-1 `onboarding` to setup, check, report, refresh
+Version 0.0.3-alpha adds version-1 `onboarding` to setup, check, report, refresh
 and account tool responses, including relevant credential errors. Legacy fields
 stay intact. `interaction` identifies the request as `interactive` or `background`.
 `setup_status` makes no live request but can include recent scoped verification
@@ -133,7 +133,7 @@ processing days.
 | `product_page_view_events` | Page-view events with product-page type |
 | `sales_usd` | Estimated sales in the report's USD field, including refunds |
 | `proceeds_usd` | Estimated proceeds in USD, including refund adjustments |
-| `apple_conversion_rate` | Always null in v0.2; unique counts are not safely additive across the report rows |
+| `apple_conversion_rate` | Always null in v0.0.3-alpha; unique counts are not safely additive across the report rows |
 
 An explicit zero in an included row can produce 0. Missing matching rows, report
 dates, or countries yield unknown metrics, not manufactured zeros. Coverage lists

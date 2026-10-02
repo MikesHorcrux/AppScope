@@ -1,7 +1,8 @@
 # Connect once, let the agent continue
 
-This source branch adds private Apple account setup and four MCP tools. The
-published v0.0.2-alpha archive does not include this flow yet.
+Version 0.0.3-alpha adds private Apple account setup and four MCP tools. The older
+v0.0.2-alpha archive does not include this flow. The stdio contract is covered by
+synthetic tests; live Apple access and end-to-end host delivery remain unverified.
 
 The user accepts one invitation, signs into Apple in their browser, and adds a
 key in AppScope's private window. AppScope remembers the request, checks access,

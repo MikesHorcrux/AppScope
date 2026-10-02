@@ -3,7 +3,7 @@
   <h1>AppScope</h1>
   <p><strong>Give your agent eyes on the App Store.</strong></p>
   <p>Keyword discovery. Competitor context. Your next ASO experiment.</p>
-  <p><code>Swift</code> &nbsp; <code>macOS 14+</code> &nbsp; <code>24 MCP tools</code> &nbsp; <code>MIT licensed</code></p>
+  <p><code>Swift</code> &nbsp; <code>macOS 14+</code> &nbsp; <code>28 MCP tools</code> &nbsp; <code>MIT licensed</code></p>
   <p>
     <a href="docs/GETTING-STARTED.md">Get started</a> &nbsp; · &nbsp;
     <a href="docs/TOOLS.md">Explore the tools</a> &nbsp; · &nbsp;
@@ -43,7 +43,7 @@ into a briefing and possible next steps.
 
 ### 1 · Install AppScope on your Mac
 
-**Download the [v0.0.2-alpha Mac release](https://github.com/LunarMothStudios/AppScope/releases/tag/v0.0.2-alpha)** for Apple Silicon or Intel, macOS 14+. No compiler or Python required.
+**Download a [Mac alpha release](https://github.com/MikesHorcrux/AppScope/releases)** for Apple Silicon or Intel, macOS 14+. No compiler or Python required.
 
 Download the `.tar.gz` archive and its `.sha256` file, then follow the
 [compiled installation steps](docs/SETUP.md#install-a-compiled-release).
@@ -56,7 +56,7 @@ compatible Xcode installation.
 Open **Terminal**, then copy and run:
 
 ```sh
-git clone https://github.com/LunarMothStudios/AppScope.git
+git clone https://github.com/MikesHorcrux/AppScope.git
 cd AppScope
 ./scripts/install.sh
 "$HOME/.local/bin/appscope" setup
@@ -72,7 +72,7 @@ path as the **command** and `serve` as its **argument**. If your host uses a JSO
 configuration file, merge the printed `appscope` entry into its existing servers.
 Reload the connection, then ask: **“Call AppScope’s setup_status.”**
 
-Installation puts the tool on your Mac; this connection step makes its 28 tools in this source branch
+Installation puts the tool on your Mac; this connection step makes its 28 tools in v0.0.3-alpha
 available to your agent. AppScope does not register itself in your host.
 [Detailed connection instructions](docs/SETUP.md#connect-an-mcp-host)
 
@@ -109,11 +109,13 @@ want a fuller picture:
 | What keywords does Apple suggest, and how popular are they? | Your Apple Ads API credentials; scores are not guaranteed for every term |
 | How are downloads, engagement and sales doing? | Your App Store Connect API credentials and available, enabled analytics reports |
 
-In this source branch, ask your agent to connect the account your report needs.
-AppScope opens a private setup window, checks access, and continues the request.
-Keys stay on your Mac. See [the connection flow](docs/CONNECTIONS.md).
+In v0.0.3-alpha, ask your agent to connect the account your report needs.
+With your consent, AppScope opens a private setup window, checks access, and
+continues the request. Your host must present the invitation and retrieve the
+result; that complete live workflow still needs qualification. Keys stay on your
+Mac. See [the connection flow](docs/CONNECTIONS.md).
 
-Terminal setup remains available, including for the published alpha:
+Terminal setup remains available:
 
 ```sh
 "$HOME/.local/bin/appscope" configure apple-ads
@@ -121,7 +123,7 @@ Terminal setup remains available, including for the published alpha:
 ```
 
 Configure whichever provider you need using Apple API credentials. Follow the
-[credential guide](docs/CREDENTIALS.md). Current source builds reload credentials
+[credential guide](docs/CREDENTIALS.md). Version 0.0.3-alpha reloads credentials
 automatically; older alpha processes need their MCP connection restarted.
 
 ## Tomorrow, bring the receipts
@@ -146,7 +148,7 @@ Good decisions need honest measurements.
 - **Competition is an estimate; popularity is separate.** Unknown scores stay unknown.
   Audience ideas are hypotheses, not measured demographics.
 - **Missing performance is not zero.** Reports can lag or have gaps. Apple’s
-  conversion rate is unavailable in v0.2; authenticated adapters await live account
+  conversion rate is unavailable in this alpha; authenticated adapters await live account
   qualification. Before/after differences do not prove causation.
 
 No MCP tool changes live listings or campaigns or spends money.
@@ -170,7 +172,7 @@ swift test
 swift run appscope-docs --check
 ```
 
-The documentation check validates generated schemas, all 24 synthetic examples,
+The documentation check validates generated schemas, all 28 synthetic examples,
 fenced JSON and relative documentation file links. Use full Xcode’s developer
 directory if the selected Command Line Tools cannot run the tests.
 

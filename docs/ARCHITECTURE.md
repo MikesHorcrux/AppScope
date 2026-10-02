@@ -78,7 +78,7 @@ actor/process, not a shared service-wide quota across multiple server processes.
 `records` stores JSON values by kind/key: app briefs, country-specific metadata,
 tracked terms, suggestion observations, imported analytics and cached performance
 summaries, refresh runs/pointers and experiment records. New record kinds reuse
-the existing schema; v0.2 requires no destructive database migration. `snapshots` stores keyword observations with indexed app/country/term/time.
+the existing schema; v0.0.3-alpha requires no destructive database migration. `snapshots` stores keyword observations with indexed app/country/term/time.
 SQLite uses WAL. New data directories use mode 0700 and the database uses 0600.
 
 Rank changes use a comparable prior UTC date from the latest 300 observations for
@@ -91,7 +91,7 @@ processing date replaces the complete older date batch atomically. If a later
 instance fails, previously completed imports remain valid. Summaries preserve
 missing metrics and coverage and do not sum segmented unique counts.
 
-There is no automatic pruning or user-facing history-deletion tool in v0.2.
+There is no automatic pruning or user-facing history-deletion tool in v0.0.3-alpha.
 Untracking preserves history. Schema/data changes in future releases need a
 documented migration/backup strategy; do not assume a binary downgrade can read a
 newer database. See [backup instructions](SETUP.md#backup-and-restore).

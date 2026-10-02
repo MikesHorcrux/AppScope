@@ -1,7 +1,8 @@
 # CLI and configuration reference
 
-The installed program is `appscope`. These commands match v0.0.2-alpha. There is no
-interactive GUI, `--json` flag, HTTP server mode, or built-in scheduler.
+The installed program is `appscope`. These commands match v0.0.3-alpha. Apple
+account setup can open a private native window. There is no dashboard, `--json`
+flag, HTTP server mode, or built-in scheduler.
 
 ## Commands
 
@@ -77,7 +78,7 @@ settings, unrelated to Apple Ads or App Store Connect API access.
 | `connection-ui/` | Private app wrappers keyed by executable hash; same executable, no extra download |
 | `appscope.sqlite3-wal`, `appscope.sqlite3-shm` when present | SQLite working files; preserve them when copying an active database |
 
-No automatic retention/deletion policy is implemented in v0.2. Data can grow over
+No automatic retention/deletion policy is implemented in v0.0.3-alpha. Data can grow over
 time. Untracking a keyword preserves its history. Files are private local data;
 they are not intended for Git, support issues, or public release artifacts.
 Back up and restore using the [installation guide](SETUP.md).

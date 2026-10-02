@@ -10,7 +10,7 @@ Open Terminal on a Mac with Swift 6+ and a macOS SDK installed. Download the
 source and install it:
 
 ```sh
-git clone https://github.com/LunarMothStudios/AppScope.git
+git clone https://github.com/MikesHorcrux/AppScope.git
 cd AppScope
 ./scripts/install.sh
 "$HOME/.local/bin/appscope" setup
@@ -46,7 +46,7 @@ Ask the agent:
 
 > Call AppScope's setup_status and list its available tools.
 
-Current source builds expose 28 tools; the published v0.0.2-alpha archive has 24. If the host cannot launch local stdio programs, it cannot
+Version 0.0.3-alpha exposes 28 tools; the older v0.0.2-alpha archive has 24. If the host cannot launch local stdio programs, it cannot
 connect directly to this server. See [connection troubleshooting](TROUBLESHOOTING.md).
 Starting `appscope serve` yourself in Terminal looks quiet because it waits for
 MCP messages on standard input. That is not an installation test; use `doctor`.
